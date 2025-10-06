@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Elxer IMS</title>
+        <link rel="icon" href="https://imgs.search.brave.com/2rFMtMEGnTcK7D54NZF7f3Fi7AZlSxoa1V0BziH1-bw/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9jb250/ZW50LmpkbWFnaWNi/b3guY29tL2NvbXAv/cmFpcHVyLWNoaGF0/dGlzZ2FyaC9mOC85/OTk5cHg3NzEueDc3/MS4xMzA1MzAwMTMw/MDMuZzhmOC9sb2dv/L2NiMzZmMzZlYmNi/NGE3ZDNkYTNkMDAx/ZjI0Nzc4NjQzLXMu/anBn " type="image/x-icon" />
+      
+        {% load static %}
+        <link rel="stylesheet" href="{% static 'css/add_items.css' %}">
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    </head>
+<body>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <h1 class="Company_name">Elxer <span class="normal-text">IMS</span></h1>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link" href="#">Overview</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">Operations</a>
+              </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Products
+                </a>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="#">Action</a></li>
+                  <li><a class="dropdown-item" href="#">Another action</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="#">Something else here</a></li>
+                </ul>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">Reporting</a>
+              </li>
+            </ul>
+            <form class="d-flex" role="search">
+              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+              <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+          </div>
+        </div>
+      </nav>
+      <h3 style="text-align: center; margin-top: 30px;">Add Inventory</h3>
+      
+      <div class="card" style="margin-top: 30px; margin-left: 30px; margin-right: 30px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);">
+
+          <div class="card-body" style="margin-top: 20px; margin-bottom: 20px; margin-left: 20px; margin-right: 20px;">
+            <div class="container-fluid" >
+              <form class="needs-validation" novalidate>
+                  <div class="row">
+                      <div class="col-md-4 mb-3">
+                          <label for="validationTooltip01">Product Name</label>
+                          <input type="text" class="form-control" id="validationTooltip01" placeholder="Item's Name" required>
+                          <div class="valid-tooltip">Looks good!</div>
+                      </div>
+                      <div class="col-md-4 mb-3">
+                          <label for="validationTooltip02">Company</label>
+                          <input type="text" class="form-control" id="validationTooltip02" placeholder="Item's Company" required>
+                          <div class="valid-tooltip">Looks good!</div>
+                      </div>
+                      <div class="col-md-4 mb-3">
+                          <label for="validationTooltip02">Site</label>
+                          <input type="text" class="form-control" id="validationTooltip02" placeholder="Site" required>
+                          <div class="valid-tooltip">Looks good!</div>
+                      </div>
+                      
+                  </div>
+                  <div class="row">
+                      <div class="col-md-4 mb-3">
+                          <label for="validationTooltip03">Supplier</label>
+                          <input type="text" class="form-control" id="validationTooltip03" placeholder="Supplier Name" required>
+                          <div class="invalid-tooltip">Please provide a valid city.</div>
+                      </div>
+                      <div class="col-md-4 mb-3">
+                        <label for="validationTooltip03">Serial Number</label>
+                        <input type="text" class="form-control" id="validationTooltip03" placeholder="Serial Number" required>
+                        <div class="invalid-tooltip">Please provide a valid city.</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <div class="dropdown show">
+                        <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          Dropdown link
+                        </a>
+                      
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                          <a class="dropdown-item" href="#">Action</a>
+                          <a class="dropdown-item" href="#">Another action</a>
+                          <a class="dropdown-item" href="#">Something else here</a>
+                        </div>
+                      </div>
+                    </div>
+                    
+                            
+                  </div>
+      
+                  <div class="row">
+                    <div class="col-md-4 mb-3">
+                      <label for="validationTooltip04">Lot Size</label>
+                      <input type="text" class="form-control" id="validationTooltip04" placeholder="Lot Size" required>
+                      <div class="invalid-tooltip">Please provide a valid state.</div>
+                    </div>
+      
+                    <div class="col-md-4 mb-3">
+                      <label for="validationTooltip04">Total Lot</label>
+                      <input type="text" class="form-control" id="validationTooltip04" placeholder="Total Lot" required>
+                      <div class="invalid-tooltip">Please provide a valid lot size.</div>
+                    </div>
+      
+                    <div class="col-md-4 mb-3">
+                        <label for="validationTooltipUsername">Total Quantity</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">123</span>
+                            </div>
+                            <input type="text" class="form-control" id="validationTooltipUsername" placeholder="Total Quantity" required style="border-radius: 5px;">
+                            <div class="invalid-tooltip">Please provide a valid Quantity.</div>
+                        </div>
+                    </div>
+                  </div>
+                      
+                  <div class="row">     
+                      <div class="col-md-4 mb-3">
+                          <label for="validationTooltip05">Stock Management Executive</label>
+                          <input type="text" class="form-control" id="validationTooltip05" placeholder="Enter Your Name" required>
+                          <div class="invalid-tooltip">Please provide a valid Name.</div>
+                      </div>
+                      <div class="col-md-4 mb-3">
+                        <label for="validationTooltip05">Inventory Date</label>
+                        <input type="text" class="form-control" id="validationTooltip05" placeholder="Date" required>
+                        <div class="invalid-tooltip">Please provide a valid zip.</div>
+                    </div>
+                    
+                  </div>
+                  
+                  <div class="row" style="margin-top: 20px;">
+                    <div class="button-container">
+                        <button class="btn-clear" type="button">Reset</button>
+                        <button class="btn-submit" type="submit">Submit</button>
+                    </div>
+                  </div>
+                  
+                
+              </form>
+            </div>
+          </div>
+          
+        </div>
+        
+    
+      
+      <script>
+      // Example starter JavaScript for disabling form submissions if there are invalid fields
+      (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+          // Fetch all the forms we want to apply custom Bootstrap validation styles to
+          var forms = document.getElementsByClassName('needs-validation');
+          // Loop over them and prevent submission
+          var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+              if (form.checkValidity() === false) {
+                event.preventDefault();
+                event.stopPropagation();
+              }
+              form.classList.add('was-validated');
+            }, false);
+          });
+        }, false);
+      })();
+      </script>
+</body>
+</html>

@@ -1,0 +1,324 @@
+{% extends "layout.html" %}
+{% block title %}Return Stocks{% endblock title %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-6">
+
+  <!-- Breadcrumb -->
+  <nav class="flex justify-end sm:justify-between items-center text-gray-500 text-sm mb-4" aria-label="breadcrumb">
+    <ol class="flex space-x-2">
+      <li><a href="{% url 'dashboard' %}" class="text-blue-600 hover:underline">Dashboard</a></li>
+      <li>/</li>
+      <li><a href="{% url 'stocks' %}" class="text-blue-600 hover:underline">Employee Details</a></li>
+      <li>/</li>
+      <li class="text-gray-400">Return Stocks</li>
+    </ol>
+  </nav>
+
+  <!-- Success Message -->
+  {% if messages %}
+  <div class="bg-green-100 border border-green-300 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+    {% for message in messages %}
+      {{ message }}
+    {% endfor %}
+    <button type="button" class="absolute top-2 right-2 text-green-700" onclick="this.parentElement.style.display='none'">&times;</button>
+  </div>
+  {% endif %}
+
+  <!-- Employee Details -->
+  <div class="bg-white rounded-xl shadow p-6 mb-6">
+    <h2 class="text-lg font-semibold mb-4">Employee Details</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <div><span class="font-semibold text-gray-500">Name:</span> <span class="text-gray-900">{{ employee.name }}</span></div>
+      <div><span class="font-semibold text-gray-500">ID:</span> <span class="text-gray-900">{{ employee.employee_id }}</span></div>
+      <div><span class="font-semibold text-gray-500">Department:</span> <span class="text-gray-900">{{ employee.department_name }}</span></div>
+      <div><span class="font-semibold text-gray-500">Email:</span> <span class="text-gray-900">{{ employee.email }}</span></div>
+    </div>
+  </div>
+
+  <!-- Return Product Card -->
+  <div class="bg-white rounded-xl shadow p-6">
+    <h2 class="text-lg font-semibold mb-4">Return Product</h2>
+    <form id="ReturnForm" method="post" action="">
+      {% csrf_token %}
+
+      <!-- Table -->
+      <div class="overflow-x-auto border border-gray-200 p-4 rounded-lg table-responsive">
+        <table class="min-w-full divide-y divide-gray-200 table-responsive">
+          <thead class="bg-gray-100 text-gray-700 text-sm uppercase">
+            <tr>
+              <th class="px-2 py-2 font-semibold text-left">Product</th>
+              <th class="px-2 py-2 font-semibold text-left">Quantity</th>
+              <th class="px-2 py-2 font-semibold text-left">Unit</th>
+              <th class="px-2 py-2 font-semibold text-left">Serial no. / Meter</th>
+              <th class="px-2 py-2 font-semibold text-center">Action</th>
+            </tr>
+          </thead>
+          <tbody id="ReturnTable" class="text-sm text-gray-700">
+            <tr class="border-b border-gray-200">
+              <td data-label="Product" class="px-2 py-1">
+                <select name="product[]" class="border border-gray-300 rounded-md px-2 py-2 w-full product-select" required>
+                  <option value="" selected>-- Select Product --</option>
+                  {% for option in products %}
+                    <option value="{{ option.id }}" data-unit="{{ option.unit }}">{{ option.product }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td data-label="Quantity" class="px-2 py-1">
+                <input type="number" name="quantity[]" class="border border-gray-300 rounded-md px-2 py-2 w-full" min="1" value="1" required>
+              </td>
+              <td data-label="Unit" class="px-2 py-1">
+                <input type="text" name="unit[]" class="border border-gray-300 rounded-md px-2 py-2 w-full unit-field" readonly required>
+              </td>
+              <td data-label="Serial no. / Meter" class="dynamic-fields px-2 py-1">
+                <div class="flex flex-col sm:flex-row gap-2 border border-gray-300 rounded-md px-2 py-1">
+                  <input type="text" name="serial_no[]" class="flex-1 px-2 py-1 serial-input" placeholder="Serial No." required>
+                  <button type="button" class="bg-yellow-500 text-black px-2 py-1 rounded scan-btn sm:w-auto w-full"><i class="ri-camera-line"></i></button>
+                </div>
+              </td>
+              <td data-label="Action" class="px-2 py-1 text-center">
+                <button type="button" class="bg-red-600 text-white px-2 py-1 rounded btn-sm w-full sm:w-auto" onclick="removeRow(this)"><i class="ri-delete-bin-line"></i></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Scanner Area -->
+      <div id="scannerWrapper" class="mt-3 text-center hidden">
+        <div id="scanner" class="border rounded p-2 mx-auto w-full max-w-md"></div>
+        <div class="mt-2 flex justify-center flex-wrap gap-2">
+          <button type="button" id="toggleCamera" class="bg-yellow-500 text-white px-2 py-1 rounded">Switch Camera</button>
+          <button type="button" id="zoomNormal" class="w-10 h-10 rounded-full border-2 border-blue-600 text-blue-600 font-bold flex items-center justify-center">1x</button>
+          <button type="button" id="zoom2x" class="w-10 h-10 rounded-full border-2 border-blue-600 text-blue-600 font-bold flex items-center justify-center">2x</button>
+          <button type="button" id="zoom3x" class="w-10 h-10 rounded-full border-2 border-blue-600 text-blue-600 font-bold flex items-center justify-center">3x</button>
+          <button type="button" id="closeScanner" class="bg-red-600 text-white px-2 py-1 rounded">✖ Cancel</button>
+        </div>
+      </div>
+
+      <div id="preview" class="mt-3 text-center font-bold text-green-600"></div>
+
+      <!-- Add Row + Submit -->
+      <div class="flex justify-between mt-3 hidden md:flex">
+        <button type="button" class="bg-green-600 text-white px-4 py-2 rounded" onclick="addRow()">+ Add Row</button>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Submit</button>
+      </div>
+
+      <div class="mt-3 md:hidden text-center">
+        <button type="button" class="bg-green-600 text-white px-4 py-2 rounded" onclick="addRow()">+ Add Row</button>
+      </div>
+
+    </form>
+
+    <!-- Back Button -->
+    {% if messages %}
+    <div class="mt-3 text-center">
+      <form method="get" action="{% url 'stocks' %}">
+        <input type="hidden" name="emp_id" value="{{ employee.Emp_id }}">
+        <!-- From Uiverse.io by AKAspidey01 --> 
+<button
+  class="bg-white text-center w-36 rounded-2xl h-12 relative text-black text-xl font-semibold group"
+  type="submit"
+>
+  <div
+    class="bg-orange-400 rounded-xl h-10 w-1/4 flex items-center justify-center absolute left-1 top-[4px] group-hover:w-[130px] z-10 duration-500"
+  >
+ 
+    <i class="ri-arrow-left-double-line text-white"></i>
+  </div>
+  <p class="translate-x-2 text-md">Go Back</p>
+</button>
+
+      </form>
+    </div>
+    {% endif %}
+
+    <!-- Rescan Confirmation Modal -->
+    <div id="rescanModal" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center hidden">
+      <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-md p-4">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-semibold text-lg">Rescan Confirmation</h3>
+          <button class="text-gray-500 text-xl" onclick="document.getElementById('rescanModal').classList.add('hidden')">&times;</button>
+        </div>
+        <p class="mb-4">This field already has a value. Do you want to rescan and overwrite it?</p>
+        <div class="flex justify-end gap-2">
+          <button id="noRescanBtn" class="bg-gray-300 px-3 py-1 rounded" onclick="document.getElementById('rescanModal').classList.add('hidden')">No</button>
+          <button id="yesRescanBtn" class="bg-blue-600 text-white px-3 py-1 rounded">Yes</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Mobile Submit -->
+<div class="text-center mt-4 md:hidden">
+  <button type="submit" form="ReturnForm" class="bg-blue-600 text-white px-6 py-2 rounded w-3/4">Submit</button>
+</div>
+
+<!-- QR Scanner Library -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+<!-- Mobile-friendly stacked table CSS -->
+<style>
+@media (max-width: 640px) {
+  table.table-responsive thead { display: none; }
+  table.table-responsive, table.table-responsive tbody, table.table-responsive tr, table.table-responsive td {
+    display: block; width: 100%;
+  }
+  table.table-responsive tr {
+    margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; padding: 0.5rem 0;
+  }
+  table.table-responsive td {
+    text-align: right; padding-left: 50%; position: relative;
+  }
+  table.table-responsive td::before {
+    content: attr(data-label);
+    position: absolute; left: 0; width: 45%; padding-left: 0.5rem;
+    font-weight: 600; text-align: left;
+  }
+  .btn-sm, .scan-btn { width: 100% !important; }
+  .flex-col.sm\:flex-row { flex-direction: column !important; }
+}
+</style>
+
+<!-- JS Logic -->
+<script>
+let html5QrCode;
+let currentCamera = "user"; 
+let currentZoom = null;
+let pendingInputField = null;
+
+function addRow() {
+  let table = document.getElementById("ReturnTable");
+  let row = document.createElement("tr");
+  row.classList.add("border-b", "border-gray-200");
+
+  row.innerHTML = `
+    <td data-label="Product" class="px-2 py-1">
+      <select name="product[]" class="border border-gray-300 rounded-md px-2 py-2 w-full product-select" required>
+        <option value="" selected>-- Select Product --</option>
+        {% for option in products %}
+          <option value="{{ option.id }}" data-unit="{{ option.unit }}">{{ option.product }}</option>
+        {% endfor %}
+      </select>
+    </td>
+    <td data-label="Quantity" class="px-2 py-1">
+      <input type="number" name="quantity[]" class="border border-gray-300 rounded-md px-2 py-2 w-full" min="1" value="1" required>
+    </td>
+    <td data-label="Unit" class="px-2 py-1">
+      <input type="text" name="unit[]" class="border border-gray-300 rounded-md px-2 py-2 w-full unit-field" readonly required>
+    </td>
+    <td data-label="Serial no. / Meter" class="dynamic-fields px-2 py-1">
+      <div class="flex flex-col sm:flex-row gap-2 border border-gray-300 rounded-md px-2 py-1">
+        <input type="text" name="serial_no[]" class="flex-1 px-2 py-1 serial-input" placeholder="Serial No." required>
+        <button type="button" class="bg-yellow-500 text-black px-2 py-1 rounded scan-btn sm:w-auto w-full"><i class="ri-camera-line"></i></button>
+      </div>
+    </td>
+    <td data-label="Action" class="px-2 py-1 text-center">
+      <button type="button" class="bg-red-600 text-white px-2 py-1 rounded btn-sm w-full sm:w-auto" onclick="removeRow(this)"><i class="ri-delete-bin-line"></i></button>
+    </td>
+  `;
+  table.appendChild(row);
+}
+
+function removeRow(btn) { btn.closest("tr").remove(); }
+
+// Product selection
+document.addEventListener("change", function(e) {
+  if (e.target.classList.contains("product-select")) {
+    const selected = e.target.options[e.target.selectedIndex];
+    const unit = selected.getAttribute("data-unit");
+    const row = e.target.closest("tr");
+    row.querySelector(".unit-field").value = unit || "";
+    const container = row.querySelector(".dynamic-fields");
+    if (unit && unit.toLowerCase() === "mtr") {
+      container.innerHTML = `
+        <div class="flex flex-col sm:flex-row justify-between gap-2">
+          <input type="number" name="meter_from[]" class="border border-gray-300 rounded-md px-3 py-2 w-full sm:w-[48%]" placeholder="Meter From" required>
+          <input type="number" name="meter_to[]" class="border border-gray-300 rounded-md px-3 py-2 w-full sm:w-[48%]" placeholder="Meter To" required>
+        </div>
+      `;
+    } else {
+      container.innerHTML = `
+        <div class="flex flex-col sm:flex-row gap-2 border border-gray-300 rounded-md px-2 py-1">
+          <input type="text" name="serial_no[]" class="flex-1 px-2 py-1 serial-input" placeholder="Serial No." required>
+          <button type="button" class="bg-yellow-500 text-black px-2 py-1 rounded scan-btn sm:w-auto w-full"><i class="ri-camera-line"></i></button>
+        </div>
+      `;
+    }
+  }
+});
+
+// Scan button logic
+document.addEventListener("click", function(e) {
+  if (e.target.classList.contains("scan-btn")) {
+    let inputField = e.target.closest("td").querySelector(".serial-input");
+    if (inputField.value.trim() !== "") {
+      pendingInputField = inputField;
+      new bootstrap.Modal(document.getElementById("rescanModal")).show();
+    } else { openScanner(inputField); }
+  }
+});
+document.getElementById("yesRescanBtn").addEventListener("click", function() {
+  if (pendingInputField) {
+    bootstrap.Modal.getInstance(document.getElementById("rescanModal")).hide();
+    openScanner(pendingInputField);
+    pendingInputField = null;
+  }
+});
+
+function openScanner(inputField) {
+  document.getElementById("scannerWrapper").style.display = "block";
+  document.getElementById("scanner").innerHTML = "";
+  html5QrCode = new Html5Qrcode("scanner");
+  startScanner(inputField);
+}
+
+function startScanner(inputField) {
+  let constraints = { facingMode: currentCamera };
+  if (currentZoom) constraints.advanced = [{ zoom: currentZoom }];
+  html5QrCode.start(
+    { facingMode: currentCamera },
+    { fps: 10, qrbox: { width: 250, height: 150 }, videoConstraints: constraints },
+    (decodedText) => {
+      html5QrCode.stop().then(() => {
+        document.getElementById("scannerWrapper").style.display = "none";
+        inputField.value = decodedText;
+        let preview = document.getElementById("preview");
+        preview.innerHTML = `<p class="fade-text">Serial scanned: ${decodedText}</p>`;
+        setTimeout(() => {
+          let textEl = preview.querySelector(".fade-text");
+          if (textEl) { textEl.style.opacity = "0"; setTimeout(() => { preview.innerHTML = ""; }, 500); }
+        }, 3000);
+      });
+    }
+  ).catch(err => alert("Camera error: " + err));
+}
+
+// Zoom & Camera toggle
+document.getElementById("zoomNormal").addEventListener("click", () => { currentZoom = null; restartScanner(); });
+document.getElementById("zoom2x").addEventListener("click", () => { currentZoom = 2; restartScanner(); });
+document.getElementById("zoom3x").addEventListener("click", () => { currentZoom = 3; restartScanner(); });
+
+function restartScanner() {
+  if (html5QrCode) {
+    html5QrCode.stop().then(() => {
+      let inputField = document.querySelector(".serial-input");
+      if (inputField) startScanner(inputField);
+    });
+  }
+}
+document.getElementById("toggleCamera").addEventListener("click", () => {
+  currentCamera = (currentCamera === "user") ? "environment" : "user";
+  if (html5QrCode) html5QrCode.stop().then(() => {
+    let inputField = document.querySelector(".serial-input");
+    if (inputField) startScanner(inputField);
+  });
+});
+document.getElementById("closeScanner").addEventListener("click", () => {
+  if (html5QrCode) html5QrCode.stop().catch(()=>{});
+  document.getElementById("scannerWrapper").style.display = "none";
+});
+</script>
+{% endblock content %}

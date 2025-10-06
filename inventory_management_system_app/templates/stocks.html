@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+{% block title %}All Employees{% endblock title %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto mt-10 mb-8 px-4">
+
+  <!-- 🔍 Header + Search -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <h2 class="text-3xl font-bold outerzone text-gray-900 tracking-wide">Employee Details</h2>
+
+    <input 
+      type="text"
+      id="searchInput"
+      placeholder="Search by name or ID..."
+      class="w-full sm:w-80 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-gray-400 focus:outline-none bg-white text-gray-800"
+    >
+  </div>
+
+  <!-- Employee Cards -->
+  <div id="employeeList" class="space-y-8">
+    {% for emp in employees %}
+    <div class="employee-card bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md hover:scale-101 transition py-6 px-5">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        
+        <!-- Employee Info -->
+        <div>
+          <p class="employee-name text-lg font-semibold text-gray-900 mb-3">{{ emp.name }}</p>
+          <p class="employee-id text-sm text-gray-500">Employee ID: {{ emp.employee_id }}</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap justify-start sm:justify-end gap-2 sm:gap-3">
+          <a href="{% url 'Employee_stock_Detail' emp.employee_id %}">
+            <button class="px-4 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-800 hover:scale-105 transition text-sm font-medium shadow w-full sm:w-auto">
+              Details
+            </button>
+          </a>
+          <a href="{% url 'issue' emp.employee_id %}">
+            <button class="px-4 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700 hover:scale-105 transition text-sm font-medium shadow w-full sm:w-auto">
+              Issue
+            </button>
+          </a>
+          <a href="{% url 'return' emp.employee_id %}">
+            <button class="px-4 py-1.5 rounded-lg bg-red-600 text-white hover:bg-red-700 hover:scale-105 transition text-sm font-medium shadow w-full sm:w-auto">
+              Return
+            </button>
+          </a>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <p class="text-center text-gray-500 mt-6">No employees found.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- 🔍 Search Filter JS -->
+<script>
+  document.getElementById("searchInput").addEventListener("keyup", function() {
+    const filter = this.value.toLowerCase();
+    const cards = document.querySelectorAll("#employeeList .employee-card");
+
+    cards.forEach(card => {
+      const name = card.querySelector(".employee-name").textContent.toLowerCase();
+      const empId = card.querySelector(".employee-id").textContent.toLowerCase();
+      card.style.display = name.includes(filter) || empId.includes(filter) ? "" : "none";
+    });
+  });
+</script>
+
+{% endblock content %}

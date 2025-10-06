@@ -1,0 +1,63 @@
+@font-face {
+    font-family: 'OuterZone';
+    src: url('../fonts/Outer_zone.ttf') format('truetype');
+}
+
+.Company_name {
+    color: #0077db;
+    text-align: center;
+    font-family: 'OuterZone', sans-serif;
+    font-weight: 500;
+    padding: 15px 20px 0px 50px;
+    font-size: x-large;
+}
+
+.normal-text {
+    font-weight: 600; 
+    font-family: sans-serif; 
+    font-size: large;
+}
+
+.card-img-top {
+    cursor: pointer;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.btn-clear {
+    max-width: 150px;
+    width: 100%;
+    background: #ff3131;
+    border: none;
+    padding: 7px 30px;
+    font-size: 18px;
+    border-radius: 10px;
+    margin-right: 20px;
+    color: white;
+    cursor: pointer;
+}
+
+.btn-submit {
+    max-width: 150px;
+    width: 100%;
+    padding: 7px 30px;
+    font-size: 18px;
+    border-radius: 10px;
+    background: #007bff;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+/* Hover effects for better user experience */
+.btn-clear:hover {
+    background: #d62c2c;
+}
+
+.btn-submit:hover {
+    background: #0056b3;
+}

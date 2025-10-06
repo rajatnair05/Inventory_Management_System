@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Elxer Inventory Management System </title>
+    <link rel="icon" href="https://imgs.search.brave.com/2rFMtMEGnTcK7D54NZF7f3Fi7AZlSxoa1V0BziH1-bw/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9jb250/ZW50LmpkbWFnaWNi/b3guY29tL2NvbXAv/cmFpcHVyLWNoaGF0/dGlzZ2FyaC9mOC85/OTk5cHg3NzEueDc3/MS4xMzA1MzAwMTMw/MDMuZzhmOC9sb2dv/L2NiMzZmMzZlYmNi/NGE3ZDNkYTNkMDAx/ZjI0Nzc4NjQzLXMu/anBn" type="image/x-icon" />
+    
+    <!-- Load the static CSS file -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/login_style.css' %}">
+</head>
+
+<body>
+    <header>
+        <h1 class="Company_name">Elxer</h1>
+    </header>
+
+    <main class="main">
+        <section class="form_section">
+            <div>
+                <h1 class="form_heading">Create Account</h1>
+                <h3>Fill in your details to register</h3>
+            </div>
+            
+            <form action="{% url 'signup' %}" method="post">
+                {% csrf_token %}
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            
+                <button type="submit">Sign Up</button>
+            </form>
+
+            <div class="login-link">
+                <p>Already have an account? <a href="{% url 'login' %}">Log in here</a></p>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

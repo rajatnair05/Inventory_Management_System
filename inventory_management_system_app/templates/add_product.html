@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+{% block title %}
+Add product
+{% endblock title %}
+{% block content %}
+<div class="card custom-card border-0 m-5">
+  <div class="card-body">
+    <h3 class="text-center fw-bold mb-4">Add Products</h3>
+    <form method="POST">
+      {% csrf_token %}
+    <div class="table-responsive ">
+      <table class="table table-bordered align-middle text-center" id="productTable">
+        <thead class="table-dark">
+          <tr>
+            <th>Product Name</th>
+            <th>Category</th>
+            <th>Serial Number</th>
+            <th>Quantity</th>
+            <th>Inward Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="text" class="form-control" name="product_name[]" required placeholder="Name"></td>
+            <td><input type="text" class="form-control" name="product_category[]" required placeholder="Category"></td>
+            <td><input type="text" class="form-control" name="serial_number[]" required placeholder="serial no."></td>
+            <td><input type="number" class="form-control" name="quantity[]" min="1" required placeholder="Quantity"></td>
+            <td><input type="text" class="form-control" value="{% now 'Y-m-d' %}" disabled></td>
+            <td>
+              <button type="button" class="btn btn-danger btn-sm remove-row">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="d-flex justify-content-between mt-3">
+      <button type="button" id="addRow" class="btn btn-success rounded-pill">+ Add Row</button>
+      <button type="submit" class="btn btn-primary px-4 rounded-pill">Save</button>
+      </form>
+    </div>
+  </div>
+  
+ {% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endfor %}
+{% endif %}
+</div>
+
+<!-- Custom card style -->
+<style>
+  .custom-card {
+    background-color: #ffffffff; /* light blue */
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+</style>
+
+<!-- Script for add/delete row -->
+<script>
+  // Add row
+  document.getElementById("addRow").addEventListener("click", function() {
+    let tableBody = document.querySelector("#productTable tbody");
+    let newRow = document.createElement("tr");
+
+    newRow.innerHTML = `
+      <td><input type="text" class="form-control" name="product_name[]" required></td>
+      <td><input type="text" class="form-control" name="product_category[]" required></td>
+      <td><input type="text" class="form-control" name="serial_number[]" required></td>
+      <td><input type="number" class="form-control" name="quantity[]" min="1" required></td>
+      <td><input type="text" class="form-control" value="${new Date().toISOString().slice(0,10)}" disabled></td>
+      <td><button type="button" class="btn btn-danger btn-sm remove-row">Delete</button></td>
+    `;
+    tableBody.appendChild(newRow);
+  });
+
+  // Delete row
+  document.addEventListener("click", function(e) {
+    if (e.target && e.target.classList.contains("remove-row")) {
+      e.target.closest("tr").remove();
+    }
+  });
+</script>
+
+
+{% endblock content %}
