@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Date Filter – Perfect Glider</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+  /* ==== Fixed UIVERSE TAB DESIGN ==== */
+  .tabs {
+    display: flex;
+    position: relative;
+    background-color: #fff;
+    box-shadow: 0 0 1px 0 rgba(24, 94, 224, 0.15),
+                0 6px 12px 0 rgba(24, 94, 224, 0.15);
+    border-radius: 12px;
+    width: 280px;
+    height: 40px;
+    padding: 0 4px; /* horizontal padding for margin effect */
+  }
+
+  .tabs input[type="radio"] {
+    display: none;
+  }
+
+  .tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.2s ease-in;
+    z-index: 2;
+  }
+
+  .tab:hover {
+    color: #185ee0;
+  }
+
+  .tabs input[type="radio"]:checked + label {
+    color: #185ee0;
+    font-weight: 600;
+  }
+
+  .glider {
+    position: absolute;
+    top: 4px;
+    left: 4px; /* match padding for margin */
+    height: 32px;
+    width: calc(100% / 3 - 8px); /* width minus left+right padding */
+    background-color: #e6eef9;
+    border-radius: 8px;
+    z-index: 1;
+    transition: transform 0.25s ease;
+  }
+
+  /* Glider positions */
+  input[id="radio-1"]:checked ~ .glider { transform: translateX(0%); }
+  input[id="radio-2"]:checked ~ .glider { transform: translateX(108%); }
+  input[id="radio-3"]:checked ~ .glider { transform: translateX(220%); }
+
+  input[id="radio-4"]:checked ~ .glider { transform: translateX(0%); }
+  input[id="radio-5"]:checked ~ .glider { transform: translateX(108%); }
+  input[id="radio-6"]:checked ~ .glider { transform: translateX(220%); }
+
+  /* === Material Date Input === */
+  .material-input {
+    position: relative;
+    width: 100%;
+  }
+
+  .material-input input[type="date"] {
+    width: 100%;
+    border: none;
+    border-bottom: 2px solid #ccc;
+    padding: 0.75rem 0.5rem 0.25rem;
+    background: transparent;
+    font-size: 1rem;
+    color: #333;
+    transition: border-color 0.3s ease;
+  }
+
+  .material-input input[type="date"]:focus {
+    outline: none;
+    border-bottom-color: #185ee0;
+  }
+
+  .material-input label {
+    position: absolute;
+    left: 0.5rem;
+    top: 0.8rem;
+    color: #666;
+    font-size: 1rem;
+    pointer-events: none;
+    transition: 0.2s ease all;
+  }
+
+  .material-input input:focus + label,
+  .material-input input:not(:placeholder-shown) + label {
+    top: -0.5rem;
+    left: 0;
+    font-size: 0.8rem;
+    color: #185ee0;
+  }
+</style>
+</head>
+
+<body class="bg-gray-900 flex items-center justify-center min-h-screen">
+
+<div class="bg-gray-100 rounded-xl p-8 w-[400px] text-gray-800 shadow-lg">
+  <p class="text-center text-2xl font-bold text-blue-800 mb-4">Data</p>
+
+  <form class="space-y-6">
+    <!-- Date Inputs -->
+    <div class="material-input">
+      <input type="date" id="from_date" name="from_date" placeholder=" " required>
+      <label for="from_date">From Date</label>
+    </div>
+
+    <div class="material-input">
+      <input type="date" id="to_date" name="to_date" placeholder=" " required>
+      <label for="to_date">To Date</label>
+    </div>
+
+    <!-- Tabs Section -->
+    <div class="flex flex-col gap-6 items-center justify-center mt-4">
+      <!-- First Tabs -->
+      <div class="tabs">
+        <input type="radio" name="tabs1" id="radio-1" checked>
+        <label for="radio-1" class="tab">Issue</label>
+
+        <input type="radio" name="tabs1" id="radio-2">
+        <label for="radio-2" class="tab">Return</label>
+
+        <input type="radio" name="tabs1" id="radio-3">
+        <label for="radio-3" class="tab">All</label>
+
+        <span class="glider"></span>
+      </div>
+
+      <!-- Second Tabs -->
+      <div class="tabs">
+        <input type="radio" name="tabs2" id="radio-4" checked>
+        <label for="radio-4" class="tab">XLSX</label>
+
+        <input type="radio" name="tabs2" id="radio-5">
+        <label for="radio-5" class="tab">PDF</label>
+
+        <input type="radio" name="tabs2" id="radio-6">
+        <label for="radio-6" class="tab">CSV</label>
+
+        <span class="glider"></span>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <button type="submit"
+      class="w-full bg-blue-800 text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors">
+      Submit
+    </button>
+  </form>
+</div>
+
+</body>
+</html>

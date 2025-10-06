@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+
 {% block title %}Employee Stocks{% endblock title %}
 
 {% block content %}
@@ -35,6 +36,8 @@
         <div class="text-gray-500 font-semibold">Email</div>
         <div class="text-gray-900" id="emp-email">{{ employee.email }}</div>
       </div>
+      
+      <div id="" class="h-min w-min">{% include "download_button.html" %}</div>
     </div>
     {% else %}
     <div class="text-yellow-600 mt-2">No employee found.</div>

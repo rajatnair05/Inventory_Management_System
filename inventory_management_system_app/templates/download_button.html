@@ -1,0 +1,215 @@
+{% block button %}
+
+    <style>
+        /* Custom animations (required for complex keyframes, as Tailwind's built-ins don't cover these exactly) */
+        .label:has(.input:checked) {
+            width: 57px;
+            animation: installed 0.4s ease 3.5s forwards;
+        }
+        
+        .label:has(.input:checked)::before {
+            animation: rotate 3s ease-in-out 0.4s forwards;
+        }
+
+        .input:checked + .circle {
+            animation: pulse 1s forwards, circleDelete 0.2s ease 3.5s forwards;
+            rotate: 180deg;
+        }
+        
+        .input:checked + .circle::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            background-color: #004177;
+            width: 100%;
+            height: 0;
+            transition: all 0.4s ease;
+            animation: installing 3s ease-in-out forwards;
+        }
+        
+        .input:checked + .circle .icon {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .input:checked ~ .circle .square {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .input:checked ~ .title:first-of-type {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .input:checked ~ .title:last-of-type {
+            animation: showInstalledMessage 0.4s ease 3.5s forwards;
+        }
+        
+        /* Revert styles on uncheck (transitions handle smooth reset) */
+        .input:not(:checked) ~ .title:first-of-type {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .input:not(:checked) ~ .title:last-of-type {
+            opacity: 0;
+            visibility: hidden;
+            animation: none;
+        }
+        
+        .input:not(:checked) + .circle {
+            animation: none;
+            rotate: 0deg;
+        }
+
+        .input:not(:checked) + .circle::before {
+            height: 0;
+            animation: none;
+        }
+
+        .input:not(:checked) + .circle .icon {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .input:not(:checked) ~ .circle .square {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .label:not(:has(.input:checked)) {
+            width: 160px !important;
+            animation: none;
+            border-color: #0077DB;
+        }
+        
+        .label:not(:has(.input:checked))::before {
+            opacity: 0;
+            visibility: hidden;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0% {
+                scale: 0.95;
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+            }
+            70% {
+                scale: 1;
+                box-shadow: 0 0 0 16px rgba(255, 255, 255, 0);
+            }
+            100% {
+                scale: 0.95;
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+            }
+        }
+
+        @keyframes installing {
+            from {
+                height: 0;
+            }
+            to {
+                height: 100%;
+            }
+        }
+        
+        @keyframes rotate {
+            0% {
+                transform: rotate(-90deg) translate(27px) rotate(0);
+                opacity: 1;
+                visibility: visible;
+            }
+            99% {
+                transform: rotate(270deg) translate(27px) rotate(270deg);
+                opacity: 1;
+                visibility: visible;
+            }
+            100% {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        @keyframes installed {
+            100% {
+                width: 150px;
+                border-color: rgb(35, 174, 35);
+            }
+        }
+        
+        @keyframes circleDelete {
+            100% {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        @keyframes showInstalledMessage {
+            100% {
+                opacity: 1;
+                visibility: visible;
+                right: 56px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- From Uiverse.io by Na3ar-17, converted to Tailwind CSS with Auto-Revert -->
+    <div class="p-0 m-0 box-border font-sans flex justify-center items-center h-min w-min">
+        <label class="label bg-transparent border-2 border-[#0077DB] flex items-center rounded-full w-[160px] cursor-pointer transition-all duration-400 ease-in-out p-[5px] relative before:content-[''] before:absolute before:inset-0 before:bg-white before:w-[8px] before:h-[8px] before:transition-all before:duration-400 before:ease-in-out before:rounded-full before:m-auto before:opacity-0 before:invisible">
+            <input type="checkbox" class="input hidden" />
+            <span class="circle relative h-[45px] w-[45px] rounded-full bg-[#0077DB] flex justify-center items-center transition-all duration-400 ease-in-out shadow-[0_0_0_0_#ffffff] overflow-hidden">
+                <svg
+                class="icon absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[30px] text-white transition-all duration-400 ease-in-out"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                >
+                <path
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.5"
+                        d="M12 19V5m0 14-4-4m4 4 4-4"
+                        ></path>
+                </svg>
+                <div class="square absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[15px] aspect-square rounded-[2px] bg-white opacity-0 invisible transition-all duration-400 ease-in-out"></div>
+            </span>
+            <p class="title absolute right-[18px] bottom-[14px] text-center text-black text-[17px] transition-all duration-400 ease-in-out">Download</p>
+            <p class="title absolute right-[18px] bottom-[14px] text-center text-green-700 text-[17px] transition-all duration-400 ease-in-out opacity-0 invisible">Done</p>
+        </label>
+    </div>
+
+    <script>
+        // Auto-revert logic: After animation + 3s "Done" display, uncheck and reset
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.querySelector('.input');
+            let timeoutId = null;
+
+            input.addEventListener('change', function() {
+                if (this.checked) {
+                    // Clear any existing timeout (in case of rapid clicks)
+                    if (timeoutId) {
+                        clearTimeout(timeoutId);
+                    }
+                    // Set timeout for full cycle: 3.5s (install anim) + 3s (Done display) = 6.5s
+                    timeoutId = setTimeout(() => {
+                        this.checked = false;
+                        // Trigger a reflow to ensure CSS transitions apply on uncheck
+                        this.offsetHeight;
+                    }, 6500);
+                } else {
+                    // Optional: Clear timeout on manual uncheck (prevents conflicts)
+                    if (timeoutId) {
+                        clearTimeout(timeoutId);
+                        timeoutId = null;
+                    }
+                }
+            });
+        });
+    </script>
+
+    {% endblock button %}
