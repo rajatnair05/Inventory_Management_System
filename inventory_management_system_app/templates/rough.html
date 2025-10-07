@@ -1,12 +1,11 @@
-{% block content %}
+// {% block content %}
 <!-- Include Tailwind CDN (or link to your static Tailwind CSS in production) -->
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
     /* Custom animations for Download Button (unchanged, but ensuring full visibility) */
     .label:has(.input:checked) {
-        height: 42px;
-        width: 42px;
+        width: 57px;
         animation: installed 0.4s ease 3.5s forwards;
     }
     
@@ -83,7 +82,7 @@
     }
     
     .label:not(:has(.input:checked)) {
-        width: 125px !important;
+        width: 160px !important;
         animation: none;
         border-color: #0077DB;
     }
@@ -137,7 +136,7 @@
 
     @keyframes installed {
         100% {
-            width: 125px;
+            width: 150px;
             border-color: rgb(35, 174, 35);
         }
     }
@@ -296,30 +295,47 @@
     }
 </style>
 
-<!-- Fixed Layout: Button Container (Now properly centered in full viewport with background for better visibility) -->
-<div class="h-min flex items-center justify-center w-min">
+<!-- Download Button (Centered in Viewport; Adjust Container as Needed) -->
+<div class="p-0 m-0 box-border font-sans flex justify-center items-center h-min w-min">
     {% block button %}
-    <label class="label bg-transparent border-2 border-[#0077DB] flex items-center rounded-full w-[130px] cursor-pointer transition-all duration-400 ease-in-out p-[5px] relative before:content-[''] before:absolute before:inset-0 before:bg-white before:w-[8px] before:h-[8px] before:transition-all before:duration-400 before:ease-in-out before:rounded-full before:m-auto before:opacity-0 before:invisible">
+    <label class="label bg-transparent border-2 border-[#0077DB] flex items-center rounded-full w-[160px] cursor-pointer transition-all duration-400 ease-in-out p-[5px] relative before:content-[''] before:absolute before:inset-0 before:bg-white before:w-[8px] before:h-[8px] before:transition-all before:duration-400 before:ease-in-out before:rounded-full before:m-auto before:opacity-0 before:invisible">
         <input type="checkbox" class="input hidden" />
-        <span class="circle relative h-[28px] w-[28px] rounded-full bg-[#0077DB] flex justify-center items-center transition-all duration-400 ease-in-out shadow-[0_0_0_0_#ffffff] overflow-hidden">
-            <i class="ri-arrow-down-line  text-white transition-all duration-400 ease-in-out"></i>
-            <!-- <div class="square absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[15px] aspect-square rounded-[2px] bg-white opacity-0 invisible transition-all duration-400 ease-in-out"></div> -->
+        <span class="circle relative h-[45px] w-[45px] rounded-full bg-[#0077DB] flex justify-center items-center transition-all duration-400 ease-in-out shadow-[0_0_0_0_#ffffff] overflow-hidden">
+            <svg
+            class="icon absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[30px] text-white transition-all duration-400 ease-in-out"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            >
+            <path
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M12 19V5m0 14-4-4m4 4 4-4"
+                    ></path>
+            </svg>
+            <div class="square absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[15px] aspect-square rounded-[2px] bg-white opacity-0 invisible transition-all duration-400 ease-in-out"></div>
         </span>
-        <p class="title absolute right-[14px] bottom-[10px] text-center text-black text-[14px] transition-all duration-400 ease-in-out">Download</p>
-        <p class="title absolute left-1/2 bottom-[6px] -translate-x-1/2 ml-[-6px] text-center text-green-700 text-[14px] pb-1 transition-all duration-400 ease-in-out opacity-0 invisible z-10">Done</p>
+        <p class="title absolute right-[18px] bottom-[14px] text-center text-black text-[17px] transition-all duration-400 ease-in-out">Download</p>
+        <p class="title absolute right-[18px] bottom-[14px] text-center text-green-700 text-[17px] transition-all duration-400 ease-in-out opacity-0 invisible">Done</p>
     </label>
     {% endblock button %}
 </div>
 
 <!-- Backdrop for Modal -->
-<div id="backdrop" class="fixed inset-0 bg-black/50 hidden z-40 flex items-center justify-center">
-    <!-- Modal with Form -->
-    <div id="modal" class="bg-white rounded-xl p-6 sm:p-8 text-gray-800 shadow-xl border border-gray-300 max-w-md w-full mx-4 relative">
+<div id="backdrop" class="fixed inset-0 bg-black/50 hidden z-40"></div>
+
+<!-- Modal with Form (Appears Centered on Button Click) -->
+<div id="modal" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 hidden max-w-md w-full mx-4">
+    <div class="relative bg-white rounded-xl p-6 sm:p-8 text-gray-800 shadow-xl border border-gray-300">
         <button id="close" class="absolute top-2 right-2 text-gray-500 hover:text-gray-900 text-2xl font-bold z-10">&times;</button>
         <p class="text-center text-xl sm:text-2xl font-bold text-blue-800 mb-4">Data</p>
 
-        <form id="downloadForm" class="space-y-6" method="post" action="{% url 'download_report' %}">
-            {% csrf_token %}
+        <form id="downloadForm" class="space-y-6" method="post" action="">  <!-- Update to your Django view URL -->
+            {% csrf_token %}  <!-- Django CSRF protection -->
+            <!-- Date Inputs -->
             <div class="material-input">
                 <input type="date" id="from_date" name="from_date" placeholder=" " required>
                 <label for="from_date">From Date</label>
@@ -330,29 +346,38 @@
                 <label for="to_date">To Date</label>
             </div>
 
-            <!-- Tabs -->
+            <!-- Tabs Section -->
             <div class="flex flex-col gap-6 items-center justify-center mt-4">
+                <!-- First Tabs (Issue/Return/All) -->
                 <div class="tabs">
                     <input type="radio" name="tabs1" id="radio-1" checked value="issue">
                     <label for="radio-1" class="tab">Issue</label>
+
                     <input type="radio" name="tabs1" id="radio-2" value="return">
                     <label for="radio-2" class="tab">Return</label>
+
                     <input type="radio" name="tabs1" id="radio-3" value="all">
                     <label for="radio-3" class="tab">All</label>
+
                     <span class="glider"></span>
                 </div>
 
+                <!-- Second Tabs (XLSX/PDF/CSV) -->
                 <div class="tabs">
                     <input type="radio" name="tabs2" id="radio-4" checked value="xlsx">
                     <label for="radio-4" class="tab">XLSX</label>
+
                     <input type="radio" name="tabs2" id="radio-5" value="pdf">
                     <label for="radio-5" class="tab">PDF</label>
+
                     <input type="radio" name="tabs2" id="radio-6" value="csv">
                     <label for="radio-6" class="tab">CSV</label>
+
                     <span class="glider"></span>
                 </div>
             </div>
 
+            <!-- Submit Button -->
             <button type="submit"
                 class="w-full bg-blue-800 text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors">
                 Submit
@@ -402,12 +427,7 @@
         }
 
         closeBtn.addEventListener('click', manualClose);
-
         backdrop.addEventListener('click', manualClose);
-        modal.addEventListener('click', function(e) {
-            e.stopPropagation(); // Prevent clicks inside modal from closing it
-        });
-
 
         // On form submit: Prevent default (no page reload), close modal, THEN start the full button animation
         form.addEventListener('submit', function(e) {

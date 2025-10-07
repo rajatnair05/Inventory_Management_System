@@ -36,13 +36,17 @@
         <div class="text-gray-500 font-semibold">Email</div>
         <div class="text-gray-900" id="emp-email">{{ employee.email }}</div>
       </div>
-      
-      <div id="" class="h-min w-min">{% include "download_button.html" %}</div>
-    </div>
+
     {% else %}
     <div class="text-yellow-600 mt-2">No employee found.</div>
     {% endif %}
   </div>
+  </div>
+  <div id="actions" class="bg-white h-16 my-8 rounded-2xl p-4 shadow-md flex justify-end items-center gap-10">
+    <a href="">email report</a>
+    <a href="">whatsapp report</a>
+    {% include "download_button.html" %}
+</div>
 
   <!-- Stocks Section -->
   <div>
@@ -63,7 +67,7 @@
                 <th class="px-2 py-2 font-semibold">Meter To</th>
               </tr>
             </thead>
-              <tbody class="text-sm text-gray-700 bg-white">
+            <tbody class="text-sm text-gray-700 bg-white">
               {% for item in stocks %}
               {% if item.doc__type == "issue" %}
               <tr class="hover:bg-gray-50 hover:text-black hover:font-semibold">
@@ -126,129 +130,108 @@
   </div>
 </div>
 
-<!-- jQuery + DataTables -->
+<!-- Include Tailwind & DataTables -->
+<script src="https://cdn.tailwindcss.com"></script>
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/dataTables.tailwind.min.js"></script>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.tailwind.min.css">
 
+<!-- Modal + Button JS -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.querySelector('.input');
+    const label = document.querySelector('.label');
+    const backdrop = document.getElementById('backdrop');
+    const modal = document.getElementById('modal');
+    const closeBtn = document.getElementById('close');
+    const form = document.getElementById('downloadForm');
+    let timeoutId = null;
+
+    // Open modal on button click
+    label.addEventListener('click', function(e) {
+        e.preventDefault();
+        input.checked = false;
+        backdrop.classList.remove('hidden');
+    });
+
+    function closeModal() {
+        backdrop.classList.add('hidden');
+        modal.classList.add('hidden');
+    }
+
+    function manualClose() {
+        closeModal();
+        input.checked = false;
+        if(timeoutId){ clearTimeout(timeoutId); timeoutId = null;}
+    }
+
+    closeBtn.addEventListener('click', manualClose);
+    backdrop.addEventListener('click', manualClose);
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        closeModal();
+        if (!form.checkValidity()) { alert('Please fill all fields'); return; }
+
+        input.checked = true;
+        if(timeoutId){ clearTimeout(timeoutId);}
+        timeoutId = setTimeout(() => { input.checked = false; timeoutId = null; }, 8000);
+
+        const formData = new FormData(form);
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch(form.action || window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {'X-CSRFToken': csrfToken,'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(response => {
+            if(!response.ok) throw new Error(response.status);
+            return response.blob();
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `data_${document.querySelector('input[name="tabs2"]:checked').value.toLowerCase()}`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        })
+        .catch(error => { console.error(error); alert('Download failed'); });
+    });
+});
+</script>
+
+<!-- DataTables Init -->
 <script>
 $(document).ready(function () {
   const config = {
-    paging: true,
-    searching: true,
-    lengthChange: true,
-    pageLength: 5,
-    scrollX: true,
+    paging: true, searching: true, lengthChange: true, pageLength: 5, scrollX: true,
     lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]],
-    language: {
-      paginate: { previous: "&laquo;", next: "&raquo;" },
-      search: "Search:",
-      lengthMenu: "Show _MENU_ entries",
-      info: "Showing _START_ to _END_ of _TOTAL_ entries"
-    }
+    language: { paginate: { previous: "&laquo;", next: "&raquo;" }, search: "Search:", lengthMenu: "Show _MENU_ entries", info: "Showing _START_ to _END_ of _TOTAL_ entries" }
   };
-
   $('#issuedTable').DataTable(config);
   $('#returnedTable').DataTable(config);
-
-  // Highlight current page
-  $(document).on('click', '.dataTables_paginate', function () {
-    setTimeout(() => $('.paginate_button.current').addClass('!text-blue-500 !font-bold'), 50);
-  });
-  setTimeout(() => $('.paginate_button.current').addClass('!text-blue-500 !font-bold'), 100);
+  $(document).on('click', '.dataTables_paginate', function () { setTimeout(()=>$('.paginate_button.current').addClass('!text-blue-500 !font-bold'), 50); });
+  setTimeout(()=>$('.paginate_button.current').addClass('!text-blue-500 !font-bold'), 100);
 });
 </script>
 
 <style>
-/* Search input styling */
-.dataTables_filter input {
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  padding: 4px 8px;
-}
-
-/* Pagination container */
-.dataTables_paginate {
-  text-align: center;
-  margin-top: 12px;
-}
-
-/* Pagination buttons */
-.paginate_button {
-  display: inline-block;
-  margin: 0 0.25rem;
-  padding: 5px 10px !important;
-  border-radius: 6px !important;
-  border: 1px solid #d1d5db !important;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s;
-}
-.paginate_button:hover {
-  background-color: #f3f4f6 !important;
-}
-.paginate_button.current {
-  color: #3b82f6 !important;
-  font-weight: 700 !important;
-  background-color: #e0f2fe !important;
-}
-
-/* Show entries & Search on same line */
-.dataTables_wrapper .dataTables_length,
-.dataTables_wrapper .dataTables_filter {
-  display: inline-flex;
-  align-items: center;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-}
-.dataTables_wrapper .dataTables_filter {
-  float: right;
-}
-
-.dataTables_wrapper .dataTables_filter input {
-  border: 1px solid #d1d5db;
-  border-radius: 25px;
-  padding: 6px 8px;
-  margin-left: 0.5rem;
-  margin-right: 0.5rem;
-  background-color: white;
-}
-.dataTables_wrapper .dataTables_length select {
-    border: 1px solid #d1d5db;
-    border-radius: 25px;
-    padding: 4px 13px; /* smaller padding reduces gap */
-    margin-left: 0.5rem;
-    -webkit-appearance: none; /* remove default arrow */
-    -moz-appearance: none;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 20 20' fill='black' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.25 8.27a.75.75 0 01-.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.5rem center; /* arrow closer to number */
-    background-size: 1rem 1rem;
-    padding-right: 1.75rem; /* space for custom arrow */
-    background-color: white;
-}
-
-/* Responsive adjustments */
-@media (max-width: 640px) {
-  .dataTables_wrapper .dataTables_length,
-  .dataTables_wrapper .dataTables_filter {
-      display: block;
-      width: 100%;
-      margin-bottom: 0.5rem;
-  }
-  .dataTables_wrapper .dataTables_filter {
-      float: none;
-      text-align: left;
-  }
-  .paginate_button {
-      padding: 5px 8px !important;
-      margin: 0 0.15rem;
-  }
-  table {
-      min-width: 600px;
-  }
-}
+/* DataTables Styling */
+.dataTables_filter input, .dataTables_wrapper .dataTables_length select { border:1px solid #d1d5db; border-radius:6px; padding:4px 8px;}
+.dataTables_paginate { text-align:center; margin-top:12px;}
+.paginate_button { display:inline-block; margin:0 0.25rem; padding:5px 10px !important; border-radius:6px !important; border:1px solid #d1d5db !important; cursor:pointer; font-weight:500; transition: background-color 0.2s; }
+.paginate_button:hover { background-color:#f3f4f6 !important; }
+.paginate_button.current { color:#3b82f6 !important; font-weight:700 !important; background-color:#e0f2fe !important; }
+/* Show entries & Search inline */
+.dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter { display:inline-flex; align-items:center; margin-top:1rem; margin-bottom:1rem; }
+.dataTables_wrapper .dataTables_filter { float:right; }
+.dataTables_wrapper .dataTables_filter input { border-radius:25px; margin:0 0.5rem; }
+.dataTables_wrapper .dataTables_length select { border-radius:25px; padding:4px 13px; background-position:right 0.5rem center; }
+@media (max-width:640px){ .dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter { display:block; width:100%; margin-bottom:0.5rem;} .dataTables_wrapper .dataTables_filter{float:none;text-align:left;} .paginate_button{padding:5px 8px !important; margin:0 0.15rem;} table{min-width:600px;} }
 </style>
+
 {% endblock content %}

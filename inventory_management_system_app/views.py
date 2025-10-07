@@ -240,8 +240,25 @@ def return_products(request, emp_id):
 
     return render(request, "return.html", {"products": products, "employee": employee})
 
-    
+def download_report(request):
+    if request.method == "POST":
+        from_date = request.POST.get("from_date")
+        to_date = request.POST.get("to_date")
+        report_type = request.POST.get("tabs1")   # issue / return / all
+        file_type = request.POST.get("tabs2")     # xlsx / pdf / csv
 
+        # Print the received values to the console (for debugging)
+        print("Received Data =>")
+        print("From Date:", from_date)
+        print("To Date:", to_date)
+        print("Report Type:", report_type)
+        print("File Type:", file_type)
+
+        # Return a simple JSON response so frontend doesn’t throw errors
+        return JsonResponse({"message": "Data received successfully"})
+
+    # Handle non-POST requests gracefully
+    return JsonResponse({"error": "Invalid request method"}, status=405)
 
 def network(request):
     return render(request, 'network.html')
@@ -264,6 +281,4 @@ def update_items(request):
 
 #playaround
 def sample(req):
-    stock = StockLedger.objects.all()
-    print(stock)
-    return render(req, 'sample.html' ,{"stocks":stock})
+    return render(req, 'rough.html')

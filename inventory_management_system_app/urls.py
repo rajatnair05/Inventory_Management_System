@@ -24,7 +24,7 @@ from .views import *
 # from .views import login
 
 urlpatterns=[
-    # path('', login, name='login'),
+    path('sample', sample, name=''),
     path('signup', signup, name='signup'),
     path('stocks/',stocks, name='stocks'),
     path('inventory/',inventory, name='inventory'),
@@ -36,4 +36,5 @@ urlpatterns=[
     path('employee_Stock_Detail/<str:emp_id>/',Employee_stock_detail, name="Employee_stock_Detail"),
     path('issue/<str:emp_id>/', Issue, name='issue'),
     path('return/<str:emp_id>/', return_products, name='return'),
+    path("download-report/", download_report, name="download_report"),
 ]
