@@ -10,6 +10,15 @@ from .models import StockItems,StockLedgerLineItems,StockLedger,SuppUser
 from django.utils import timezone
 import pytz
 from django.db import transaction
+import io
+import pandas as pd
+from django.http import FileResponse
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+
+
 
 API_BASE_URL = "http://api.elxer.com/v2/elxerone/agent-list"  
 API_TOKEN = "36A9F18467C3EFD17E223FA46A3E4"  
@@ -240,25 +249,78 @@ def return_products(request, emp_id):
 
     return render(request, "return.html", {"products": products, "employee": employee})
 
+
+
 def download_report(request):
     if request.method == "POST":
         from_date = request.POST.get("from_date")
         to_date = request.POST.get("to_date")
-        report_type = request.POST.get("tabs1")   # issue / return / all
-        file_type = request.POST.get("tabs2")     # xlsx / pdf / csv
+        report_type = request.POST.get("tabs1")
+        file_type = request.POST.get("tabs2")
+        emp_id = request.POST.get("emp_id")
+        #fetch data from DB based on from_date and to_date
+        from_date_obj = datetime.datetime.strptime(from_date, "%Y-%m-%d")
+        to_date_obj = datetime.datetime.strptime(to_date, "%Y-%m-%d")
 
-        # Print the received values to the console (for debugging)
-        print("Received Data =>")
-        print("From Date:", from_date)
-        print("To Date:", to_date)
-        print("Report Type:", report_type)
-        print("File Type:", file_type)
 
-        # Return a simple JSON response so frontend doesn’t throw errors
-        return JsonResponse({"message": "Data received successfully"})
+        
+        fetch_data=stockdata(emp_id,from_date_obj,to_date_obj,report_type)
 
-    # Handle non-POST requests gracefully
-    return JsonResponse({"error": "Invalid request method"}, status=405)
+        # Debug print
+        print(f"Received Data => From: {from_date}, To: {to_date}, {report_type}")
+
+        # Fetch data
+        
+        df = pd.DataFrame(list(fetch_data))
+
+        # Make datetime columns timezone naive
+        for col in df.columns:
+            if pd.api.types.is_datetime64_any_dtype(df[col]):
+                if getattr(df[col].dt, 'tz', None) is not None:
+                    df[col] = df[col].dt.tz_convert(None)
+        df.rename(columns={
+            'user__employee_id': 'Employee ID',
+            'user__user_name': 'Employee Name',
+            'date': 'Transaction Date',
+            'doc__type': 'Document Type',
+            'product_item__product': 'Product',
+            'qty': 'Quantity',
+            'unit': 'Unit',
+            'sr_no': 'Serial No',
+            'reading_from': 'Reading From',
+            'reading_to': 'Reading To',
+        }, inplace=True)
+        
+        
+            
+        output = io.BytesIO()
+        if file_type.lower() == "xlsx":
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                df.to_excel(writer, index=False, sheet_name='Products')
+        
+            output.seek(0)
+
+            return FileResponse(
+                output,
+                as_attachment=True,
+                filename="Stocks.xlsx",
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+        elif file_type.lower() == "csv":
+            df.to_csv(output, index=False, encoding='utf-8')
+            output.seek(0)
+            filename = f"Stocks_{report_type}_{from_date}_to_{to_date}.csv"
+            content_type = 'text/csv'
+            response = FileResponse(output, as_attachment=True, filename=filename, content_type=content_type)
+            return response
+        
+        elif file_type.lower() == "pdf":
+            return generate_pdf_report(df, from_date, to_date, report_type)
+        else:
+            return HttpResponse("Invalid file type", status=400)
+
+    return HttpResponse("Invalid request method", status=400)
+
 
 def network(request):
     return render(request, 'network.html')
@@ -282,3 +344,89 @@ def update_items(request):
 #playaround
 def sample(req):
     return render(req, 'rough.html')
+
+def stockdata(emp_id,from_date_obj,to_date_obj,type):
+    if type == "issue" or type == "return":
+        stockdata = (StockLedgerLineItems.objects
+                .select_related('doc', 'user', 'product_item')
+                .filter(
+                    user__employee_id=emp_id,
+                    date__date__range=(from_date_obj, to_date_obj),doc__type=type)
+                .values(
+                    'user__employee_id',
+                    'user__user_name',
+                    'date',
+                    'doc__type',
+                    'product_item__product',
+                    'qty',
+                    'unit',
+                    'sr_no',
+                    'reading_from',
+                    'reading_to',
+                )
+            )
+        return stockdata
+    else:
+        stockdata = (StockLedgerLineItems.objects
+                .select_related('doc', 'user', 'product_item')
+                .filter(
+                    user__employee_id=emp_id,
+                    date__date__range=(from_date_obj, to_date_obj)
+                )
+                .values(
+                    'user__employee_id',
+                    'user__user_name',
+                    'date',
+                    'doc__type',
+                    'product_item__product',
+                    'qty',
+                    'unit',
+                    'sr_no',
+                    'reading_from',
+                    'reading_to',
+                )
+            )
+        return stockdata
+    
+
+
+def generate_pdf_report(df, from_date, to_date, report_type):
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4))
+    elements = []
+
+    styles = getSampleStyleSheet()
+    elements.append(
+    Paragraph('<font color="#0077db">Elxer Employee Stock Report</font>',styles["Title"]
+    )
+)
+    elements.append(Paragraph(f"Report Type: {report_type}", styles["Normal"]))
+    elements.append(Paragraph(f"From: {from_date}  To: {to_date}", styles["Normal"]))
+    elements.append(Spacer(1, 12))
+
+    # Convert dataframe to list of lists
+    data = [df.columns.tolist()] + df.values.tolist()
+
+    # Create table with minimal styling
+    table = Table(data, hAlign='CENTER')
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#0077db")),  # header background
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),                 # header text
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('BOTTOMPADDING', (0,0), (-1,0), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor("#F3F3FF")])
+    ]))
+    
+    elements.append(table)
+    doc.build(elements)
+    buffer.seek(0)
+
+    return FileResponse(
+        buffer,
+        as_attachment=True,
+        filename=f"Stocks_{report_type}_{from_date}_to_{to_date}.pdf",
+        content_type='application/pdf'
+    )

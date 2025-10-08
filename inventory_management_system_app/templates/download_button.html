@@ -320,6 +320,7 @@
 
         <form id="downloadForm" class="space-y-6" method="post" action="{% url 'download_report' %}">
             {% csrf_token %}
+            <input type="hidden" name="emp_id" value="{{ emp_id }}">
             <div class="material-input">
                 <input type="date" id="from_date" name="from_date" placeholder=" " required>
                 <label for="from_date">From Date</label>
@@ -376,6 +377,7 @@
         label.addEventListener('click', function(e) {
             e.preventDefault();  // Stop the checkbox from toggling
             // Ensure input is unchecked (idle state)
+             
             input.checked = false;
             input.offsetHeight;  // Trigger reflow for CSS reset
             // Show modal/form (appears as it did earlier: centered with backdrop)
@@ -405,19 +407,28 @@
 
         backdrop.addEventListener('click', manualClose);
         modal.addEventListener('click', function(e) {
+            
             e.stopPropagation(); // Prevent clicks inside modal from closing it
         });
 
-
+        let isSubmitting = false;
         // On form submit: Prevent default (no page reload), close modal, THEN start the full button animation
         form.addEventListener('submit', function(e) {
             e.preventDefault();  // CRITICAL: Prevent full form submission and page reload to allow animation to play
+            e.stopPropagation();
+
+            if (isSubmitting) return; // Prevent double submit
+            isSubmitting = true;
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
 
             closeModal();  // Close modal first
 
             // Validate form before proceeding (optional, but ensures required fields are filled)
             if (!form.checkValidity()) {
                 alert('Please fill in all required fields.');
+                submitBtn.disabled = false;
                 return;
             }
 
@@ -440,47 +451,17 @@
             // Handle form submission via AJAX (no page reload, allows animation to complete)
             const formData = new FormData(form);
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-            fetch(form.action || window.location.href, {  // Use action or current URL
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': csrfToken,
-                    'X-Requested-With': 'XMLHttpRequest'  // Optional: Helps Django detect AJAX
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                // Assume your Django view returns a file (blob) for download
-                return response.blob();
-            })
-            .then(blob => {
-                // Trigger download
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `data_${document.querySelector('input[name="tabs2"]:checked').value.toLowerCase()}`;  // Dynamic filename, e.g., data_xlsx
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-                console.log('Download started successfully');
-            })
-            .catch(error => {
-                console.error('Download error:', error);
-                // On error, optionally revert animation immediately
-                // input.checked = false;
-                // input.offsetHeight;
-                // if (timeoutId) {
-                //     clearTimeout(timeoutId);
-                //     timeoutId = null;
-                // }
-                alert('Download failed. Please try again.');
-            });
+                
         });
+        
     });
+document.getElementById('downloadForm').addEventListener('submit', function(e) {
+    // optional: show loader
+    setTimeout(function() {
+        // reload page after 1 second to ensure download starts
+        location.reload();
+    }, 5000);
+});
 </script>
 
 {% endblock %}
