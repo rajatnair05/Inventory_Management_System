@@ -1,0 +1,40 @@
+<p id="daily-quote" class="text-center text-sm italic text-gray-700">Loading motivational quote...</p>
+
+<script>
+(async () => {
+  const el = document.getElementById('daily-quote');
+  if (!el) return;
+
+  const todayKey = (() => {
+    const d = new Date();
+    return `dailyQuote:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+  })();
+
+  function showQuote(text, author) {
+    el.innerHTML = `“${text}”<br><span class="text-xs text-gray-500">— ${author}</span>`;
+  }
+
+  // Check localStorage first
+  try {
+    const cached = localStorage.getItem(todayKey);
+    if (cached) {
+      const { text, author } = JSON.parse(cached);
+      showQuote(text, author);
+      return;
+    }
+  } catch {}
+
+  try {
+    const res = await fetch('https://api.quotable.io/random');
+    if (!res.ok) throw new Error('Failed to fetch');
+    const data = await res.json();
+    const text = data.content || 'Stay motivated!';
+    const author = data.author || 'Unknown';
+    showQuote(text, author);
+    localStorage.setItem(todayKey, JSON.stringify({ text, author }));
+  } catch (err) {
+    console.error(err);
+    el.textContent = 'Could not load quote — try again later.';
+  }
+})();
+</script>

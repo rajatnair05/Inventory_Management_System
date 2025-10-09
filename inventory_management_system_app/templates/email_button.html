@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+.e_Btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition-duration: 0.3s;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.199);
+  background-color: #EA4335;
+}
+
+.emailSvg{
+margin-left: 0.9px;
+}
+
+
+.e_sign {
+  width: 100%;
+  transition-duration: 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.e_sign svg {
+  width: 25px;
+}
+
+.e_sign svg path {
+  fill: white;
+}
+.text {
+  position: absolute;
+  right: 0%;
+  width: 0%;
+  opacity: 0;
+  color: white;
+  font-size: 0.9em;
+  font-weight: 600;
+  transition-duration: 0.3s;
+  
+}
+
+.e_Btn:hover {
+  width: 120px;
+  border-radius: 40px;
+  transition-duration: 0.3s;
+}
+
+.e_Btn:hover .e_sign {
+  width: 30%;
+  transition-duration: 0.3s;
+  padding-left: 2px;
+}
+
+.e_Btn:hover .text {
+  opacity: 1;
+  width: 70%;
+  transition-duration: 0.3s;
+  padding-right: 7px;
+}
+.e_Btn:active {
+  transform: translate(2px, 2px);
+}
+
+</style>
+<body>
+<button class="e_Btn">
+  <div class="e_sign">
+    <svg class="emailSvg" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve">
+<g>
+	<g>
+	</g>
+</g>
+<g>
+	<g> 
+	</g>
+</g>
+<g>
+	<g>
+		<path d="M449.742,62.685H62.258C27.929,62.685,0,90.614,0,124.942v262.117c0,34.329,27.929,62.257,62.258,62.257h387.484
+			c34.33,0,62.258-27.928,62.258-62.257V124.942C512,90.614,484.072,62.685,449.742,62.685z M419.912,83.582L255.859,216.19
+			L91.806,83.582H419.912z M428.126,428.418H83.592V184.382l165.712,133.49c3.826,3.082,9.284,3.082,13.11,0l165.711-133.49V428.418
+			z M491.102,387.058c0,22.806-18.554,41.359-41.36,41.359h-0.717v-265.87c0-4.023-2.309-7.688-5.939-9.425
+			c-3.632-1.738-7.934-1.235-11.065,1.288L255.859,296.318L79.697,154.41c-3.134-2.523-7.438-3.026-11.065-1.288
+			c-3.63,1.737-5.939,5.402-5.939,9.425v265.87h-0.436c-22.805,0.001-41.359-18.553-41.359-41.358V124.942
+			c0-21.626,16.688-39.418,37.861-41.2l190.532,154.012c1.915,1.549,4.242,2.323,6.568,2.323c2.327,0,4.653-0.774,6.568-2.323
+			L452.983,83.721c21.295,1.66,38.119,19.507,38.119,41.22V387.058z"/>
+	</g>
+</g>
+</svg>
+  </div>
+
+  <div class="text">Email</div>
+</button>
+
+
+
+</body>
+</html>

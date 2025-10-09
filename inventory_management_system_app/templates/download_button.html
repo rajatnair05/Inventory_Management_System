@@ -1,326 +1,211 @@
 {% block content %}
-<!-- Include Tailwind CDN (or link to your static Tailwind CSS in production) -->
+<!-- Include Tailwind CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-    /* Custom animations for Download Button (unchanged, but ensuring full visibility) */
-    .label:has(.input:checked) {
-        height: 42px;
-        width: 42px;
-        animation: installed 0.4s ease 3.5s forwards;
-    }
-    
-    .label:has(.input:checked)::before {
-        animation: rotate 3s ease-in-out 0.4s forwards;
-    }
+/* ------------------ New Download Button ------------------ */
+.Btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition-duration: 0.3s;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.199);
+  background-color: #0077db;
+}
 
-    .input:checked + .circle {
-        animation: pulse 1s forwards, circleDelete 0.2s ease 3.5s forwards;
-        rotate: 180deg;
-    }
-    
-    .input:checked + .circle::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 0;
-        background-color: #004177;
-        width: 100%;
-        height: 0;
-        transition: all 0.4s ease;
-        animation: installing 3s ease-in-out forwards;
-    }
-    
-    .input:checked + .circle .icon {
-        opacity: 0;
-        visibility: hidden;
-    }
+.download-icon {
+  margin-bottom: 3px;
+  margin-left: 1px;
+}
 
-    .input:checked ~ .circle .square {
-        opacity: 1;
-        visibility: visible;
-    }
+.sign {
+  width: 100%;
+  transition-duration: 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-    .input:checked ~ .title:first-of-type {
-        opacity: 0;
-        visibility: hidden;
-    }
+.sign svg {
+  width: 25px;
+}
 
-    .input:checked ~ .title:last-of-type {
-        animation: showInstalledMessage 0.4s ease 3.5s forwards;
-    }
-    
-    /* Revert styles on uncheck (transitions handle smooth reset) */
-    .input:not(:checked) ~ .title:first-of-type {
-        opacity: 1;
-        visibility: visible;
-    }
+.text {
+  position: absolute;
+  right: 0%;
+  width: 0%;
+  opacity: 0;
+  color: white;
+  font-size: 0.9em;
+  font-weight: 600;
+  transition-duration: 0.3s;
+}
 
-    .input:not(:checked) ~ .title:last-of-type {
-        opacity: 0;
-        visibility: hidden;
-        animation: none;
-    }
-    
-    .input:not(:checked) + .circle {
-        animation: none;
-        rotate: 0deg;
-    }
+.Btn:hover {
+  width: 120px;
+  border-radius: 40px;
+}
 
-    .input:not(:checked) + .circle::before {
-        height: 0;
-        animation: none;
-    }
+.Btn:hover .sign {
+  width: 30%;
+  padding-left: 2px;
+}
 
-    .input:not(:checked) + .circle .icon {
-        opacity: 1;
-        visibility: visible;
-    }
+.Btn:hover .text {
+  opacity: 1;
+  width: 70%;
+  padding-right: 7px;
+}
 
-    .input:not(:checked) ~ .circle .square {
-        opacity: 0;
-        visibility: hidden;
-    }
-    
-    .label:not(:has(.input:checked)) {
-        width: 125px !important;
-        animation: none;
-        border-color: #0077DB;
-    }
-    
-    .label:not(:has(.input:checked))::before {
-        opacity: 0;
-        visibility: hidden;
-        animation: none;
-    }
+.Btn:active {
+  transform: translate(2px, 2px);
+}
 
-    @keyframes pulse {
-        0% {
-            scale: 0.95;
-            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
-        }
-        70% {
-            scale: 1;
-            box-shadow: 0 0 0 16px rgba(255, 255, 255, 0);
-        }
-        100% {
-            scale: 0.95;
-            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-        }
-    }
+/* ------------------ Form/Modal Styles ------------------ */
+.tabs {
+    display: flex;
+    position: relative;
+    background-color: #fff;
+    box-shadow: 0 0 1px 0 rgba(24, 94, 224, 0.15),
+                0 6px 12px 0 rgba(24, 94, 224, 0.15);
+    border-radius: 12px;
+    width: 280px;
+    height: 40px;
+    padding: 0 4px;
+}
 
-    @keyframes installing {
-        from {
-            height: 0;
-        }
-        to {
-            height: 100%;
-        }
-    }
-    
-    @keyframes rotate {
-        0% {
-            transform: rotate(-90deg) translate(27px) rotate(0);
-            opacity: 1;
-            visibility: visible;
-        }
-        99% {
-            transform: rotate(270deg) translate(27px) rotate(270deg);
-            opacity: 1;
-            visibility: visible;
-        }
-        100% {
-            opacity: 0;
-            visibility: hidden;
-        }
-    }
+.tabs input[type="radio"] {
+    display: none;
+}
 
-    @keyframes installed {
-        100% {
-            width: 125px;
-            border-color: rgb(35, 174, 35);
-        }
-    }
-    
-    @keyframes circleDelete {
-        100% {
-            opacity: 0;
-            visibility: hidden;
-        }
-    }
+.tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.2s ease-in;
+    z-index: 2;
+}
 
-    @keyframes showInstalledMessage {
-        100% {
-            opacity: 1;
-            visibility: visible;
-            right: 56px;
-        }
-    }
+.tab:hover {
+    color: #185ee0;
+}
 
-    /* Styles for Form/Modal (unchanged from original) */
-    .tabs {
-        display: flex;
-        position: relative;
-        background-color: #fff;
-        box-shadow: 0 0 1px 0 rgba(24, 94, 224, 0.15),
-                    0 6px 12px 0 rgba(24, 94, 224, 0.15);
-        border-radius: 12px;
-        width: 280px;
-        height: 40px;
-        padding: 0 4px;
-    }
+.tabs input[type="radio"]:checked + label {
+    color: #185ee0;
+    font-weight: 600;
+}
 
-    .tabs input[type="radio"] {
-        display: none;
-    }
+.glider {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    height: 32px;
+    width: calc(100% / 3 - 8px);
+    background-color: #e6eef9;
+    border-radius: 8px;
+    z-index: 1;
+    transition: transform 0.25s ease;
+}
 
-    .tab {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #000;
-        font-weight: 500;
-        cursor: pointer;
-        transition: color 0.2s ease-in;
-        z-index: 2;
-    }
+input[id="radio-1"]:checked ~ .glider { transform: translateX(0%); }
+input[id="radio-2"]:checked ~ .glider { transform: translateX(108%); }
+input[id="radio-3"]:checked ~ .glider { transform: translateX(220%); }
 
-    .tab:hover {
-        color: #185ee0;
-    }
+input[id="radio-4"]:checked ~ .glider { transform: translateX(0%); }
+input[id="radio-5"]:checked ~ .glider { transform: translateX(108%); }
+input[id="radio-6"]:checked ~ .glider { transform: translateX(220%); }
 
-    .tabs input[type="radio"]:checked + label {
-        color: #185ee0;
-        font-weight: 600;
-    }
+.material-input {
+    position: relative;
+    width: 100%;
+}
 
-    .glider {
-        position: absolute;
-        top: 4px;
-        left: 4px;
-        height: 32px;
-        width: calc(100% / 3 - 8px);
-        background-color: #e6eef9;
-        border-radius: 8px;
-        z-index: 1;
-        transition: transform 0.25s ease;
-    }
+.material-input input[type="date"] {
+    width: 100%;
+    border: none;
+    border-bottom: 2px solid #ccc;
+    padding: 0.75rem 0.5rem 0.25rem;
+    background: transparent;
+    font-size: 1rem;
+    color: #333;
+    transition: border-color 0.3s ease;
+}
 
-    input[id="radio-1"]:checked ~ .glider { transform: translateX(0%); }
-    input[id="radio-2"]:checked ~ .glider { transform: translateX(108%); }
-    input[id="radio-3"]:checked ~ .glider { transform: translateX(220%); }
+.material-input input[type="date"]:focus {
+    outline: none;
+    border-bottom-color: #185ee0;
+}
 
-    input[id="radio-4"]:checked ~ .glider { transform: translateX(0%); }
-    input[id="radio-5"]:checked ~ .glider { transform: translateX(108%); }
-    input[id="radio-6"]:checked ~ .glider { transform: translateX(220%); }
+.material-input label {
+    position: absolute;
+    left: 0.5rem;
+    top: 0.8rem;
+    color: #666;
+    font-size: 1rem;
+    pointer-events: none;
+    transition: 0.2s ease all;
+}
 
-    .material-input {
-        position: relative;
-        width: 100%;
-    }
+.material-input input:focus + label,
+.material-input input:not(:placeholder-shown) + label {
+    top: -0.5rem;
+    left: 0;
+    font-size: 0.8rem;
+    color: #185ee0;
+}
 
-    .material-input input[type="date"] {
-        width: 100%;
-        border: none;
-        border-bottom: 2px solid #ccc;
-        padding: 0.75rem 0.5rem 0.25rem;
-        background: transparent;
-        font-size: 1rem;
-        color: #333;
-        transition: border-color 0.3s ease;
-    }
+@media (max-width: 640px) {
+    .tabs { width: 100%; max-width: 260px; height: 38px; }
+    .glider { height: 30px; }
+    .tab { font-size: 0.9rem; }
+    .material-input input[type="date"] { font-size: 0.9rem; }
+}
 
-    .material-input input[type="date"]:focus {
-        outline: none;
-        border-bottom-color: #185ee0;
-    }
-
-    .material-input label {
-        position: absolute;
-        left: 0.5rem;
-        top: 0.8rem;
-        color: #666;
-        font-size: 1rem;
-        pointer-events: none;
-        transition: 0.2s ease all;
-    }
-
-    .material-input input:focus + label,
-    .material-input input:not(:placeholder-shown) + label {
-        top: -0.5rem;
-        left: 0;
-        font-size: 0.8rem;
-        color: #185ee0;
-    }
-
-    /* Responsive Adjustments for Form */
-    @media (max-width: 640px) {
-        .tabs {
-            width: 100%;
-            max-width: 260px;
-            height: 38px;
-        }
-
-        .glider {
-            height: 30px;
-        }
-
-        .tab {
-            font-size: 0.9rem;
-        }
-
-        .material-input input[type="date"] {
-            font-size: 0.9rem;
-        }
-    }
-
-    @media (max-width: 400px) {
-        .tabs {
-            max-width: 230px;
-            height: 36px;
-            padding: 0 2px;
-        }
-
-        .glider {
-            height: 28px;
-        }
-
-        .tab {
-            font-size: 0.85rem;
-        }
-
-        .material-input input[type="date"] {
-            font-size: 0.85rem;
-        }
-    }
+@media (max-width: 400px) {
+    .tabs { max-width: 230px; height: 36px; padding: 0 2px; }
+    .glider { height: 28px; }
+    .tab { font-size: 0.85rem; }
+    .material-input input[type="date"] { font-size: 0.85rem; }
+}
 </style>
 
-<!-- Fixed Layout: Button Container (Now properly centered in full viewport with background for better visibility) -->
+<!-- ------------------ Download Button ------------------ -->
 <div class="h-min flex items-center justify-center w-min">
     {% block button %}
-    <label class="label bg-transparent border-2 border-[#0077DB] flex items-center rounded-full w-[130px] cursor-pointer transition-all duration-400 ease-in-out p-[5px] relative before:content-[''] before:absolute before:inset-0 before:bg-white before:w-[8px] before:h-[8px] before:transition-all before:duration-400 before:ease-in-out before:rounded-full before:m-auto before:opacity-0 before:invisible">
-        <input type="checkbox" class="input hidden" />
-        <span class="circle relative h-[28px] w-[28px] rounded-full bg-[#0077DB] flex justify-center items-center transition-all duration-400 ease-in-out shadow-[0_0_0_0_#ffffff] overflow-hidden">
-            <i class="ri-arrow-down-line  text-white transition-all duration-400 ease-in-out"></i>
-            <!-- <div class="square absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[15px] aspect-square rounded-[2px] bg-white opacity-0 invisible transition-all duration-400 ease-in-out"></div> -->
-        </span>
-        <p class="title absolute right-[14px] bottom-[10px] text-center text-black text-[14px] transition-all duration-400 ease-in-out">Download</p>
-        <p class="title absolute left-1/2 bottom-[6px] -translate-x-1/2 ml-[-6px] text-center text-green-700 text-[14px] pb-1 transition-all duration-400 ease-in-out opacity-0 invisible z-10">Done</p>
-    </label>
+    <button class="Btn" type="button" id="downloadBtn">
+        <div class="sign">
+            <svg class="download-icon" width="20" height="20" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                <line x1="32" y1="12" x2="32" y2="44" stroke="white" stroke-width="6" stroke-linecap="round"/>
+                <polyline points="16,36 32,52 48,36" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="16" y1="60" x2="48" y2="60" stroke="white" stroke-width="6" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="text">Download</div>
+    </button>
     {% endblock button %}
 </div>
 
-<!-- Backdrop for Modal -->
-<div id="backdrop" class="fixed inset-0 bg-black/50 hidden z-40 flex items-center justify-center">
-    <!-- Modal with Form -->
+<!-- ------------------ Backdrop / Modal ------------------ -->
+<div id="backdrop" class="fixed inset-0 backdrop-blur-sm bg-black/50 hidden z-40 flex items-center justify-center">
     <div id="modal" class="bg-white rounded-xl p-6 sm:p-8 text-gray-800 shadow-xl border border-gray-300 max-w-md w-full mx-4 relative">
         <button id="close" class="absolute top-2 right-2 text-gray-500 hover:text-gray-900 text-2xl font-bold z-10">&times;</button>
-        <p class="text-center text-xl sm:text-2xl font-bold text-blue-800 mb-4">Data</p>
+        <p class="text-center text-xl sm:text-2xl font-bold text-blue-800 mb-4">Download Report</p>
 
         <form id="downloadForm" class="space-y-6" method="post" action="{% url 'download_report' %}">
             {% csrf_token %}
             <input type="hidden" name="emp_id" value="{{ emp_id }}">
+
             <div class="material-input">
                 <input type="date" id="from_date" name="from_date" placeholder=" " required>
                 <label for="from_date">From Date</label>
@@ -362,106 +247,40 @@
     </div>
 </div>
 
+<!-- ------------------ JavaScript ------------------ -->
 <script>
-    // JavaScript for Button Animation and Modal (fixed with AJAX to prevent page reload)
-    document.addEventListener('DOMContentLoaded', function() {
-        const input = document.querySelector('.input');
-        const label = document.querySelector('.label');  // The clickable label
-        const backdrop = document.getElementById('backdrop');
-        const modal = document.getElementById('modal');
-        const closeBtn = document.getElementById('close');
-        const form = document.getElementById('downloadForm');
-        let timeoutId = null;
+document.addEventListener('DOMContentLoaded', function() {
+    const downloadBtn = document.getElementById('downloadBtn');
+    const backdrop = document.getElementById('backdrop');
+    const modal = document.getElementById('modal');
+    const closeBtn = document.getElementById('close');
+    const form = document.getElementById('downloadForm');
 
-        // Prevent default checkbox toggle on label click; instead, show modal without starting animation
-        label.addEventListener('click', function(e) {
-            e.preventDefault();  // Stop the checkbox from toggling
-            // Ensure input is unchecked (idle state)
-             
-            input.checked = false;
-            input.offsetHeight;  // Trigger reflow for CSS reset
-            // Show modal/form (appears as it did earlier: centered with backdrop)
-            backdrop.classList.remove('hidden');
-            modal.classList.remove('hidden');
-        });
+    function openModal() {
+        backdrop.classList.remove('hidden');
+        modal.classList.remove('hidden');
+    }
 
-        function closeModal() {
-            backdrop.classList.add('hidden');
-            modal.classList.add('hidden');
-        }
+    function closeModal() {
+        backdrop.classList.add('hidden');
+        modal.classList.add('hidden');
+    }
 
-        // Manual close (without submit): close modal, do nothing to button (no animation)
-        function manualClose() {
-            closeModal();
-            // Ensure input remains unchecked (no animation starts)
-            input.checked = false;
-            input.offsetHeight;  // Trigger reflow if needed
-            // Clear any timeout (though none should be running)
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-                timeoutId = null;
-            }
-        }
+    downloadBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    backdrop.addEventListener('click', closeModal);
+    modal.addEventListener('click', e => e.stopPropagation());
 
-        closeBtn.addEventListener('click', manualClose);
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        closeModal();
 
-        backdrop.addEventListener('click', manualClose);
-        modal.addEventListener('click', function(e) {
-            
-            e.stopPropagation(); // Prevent clicks inside modal from closing it
-        });
+        // Optional: simulate download animation
+        downloadBtn.classList.add('submitted');
 
-        let isSubmitting = false;
-        // On form submit: Prevent default (no page reload), close modal, THEN start the full button animation
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();  // CRITICAL: Prevent full form submission and page reload to allow animation to play
-            e.stopPropagation();
-
-            if (isSubmitting) return; // Prevent double submit
-            isSubmitting = true;
-
-            const submitBtn = form.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-
-            closeModal();  // Close modal first
-
-            // Validate form before proceeding (optional, but ensures required fields are filled)
-            if (!form.checkValidity()) {
-                alert('Please fill in all required fields.');
-                submitBtn.disabled = false;
-                return;
-            }
-
-            // Now start the animation by checking the input
-            input.checked = true;
-            input.offsetHeight;  // Trigger reflow to start CSS animations immediately
-
-            // Clear any existing timeout
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
-            // Set timeout for full cycle: 4s (extended installing/rotate for visibility) + 4s (Done linger) = 8s total
-            // This gives ample time for pulse (1s), rotate/installing (3s), circleDelete/installed/showDone (at 3.5s), and extra linger
-            timeoutId = setTimeout(() => {
-                input.checked = false;
-                input.offsetHeight;  // Trigger reflow for smooth reset
-                timeoutId = null;
-            }, 8000);
-
-            // Handle form submission via AJAX (no page reload, allows animation to complete)
-            const formData = new FormData(form);
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                
-        });
-        
+        // Normal form submission
+        form.submit();
     });
-document.getElementById('downloadForm').addEventListener('submit', function(e) {
-    // optional: show loader
-    setTimeout(function() {
-        // reload page after 1 second to ensure download starts
-        location.reload();
-    }, 5000);
 });
 </script>
-
 {% endblock %}
