@@ -17,12 +17,15 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-
-
+from django.conf import settings
+import os
+from itsdangerous import URLSafeSerializer
+import urllib.parse
 
 API_BASE_URL = "http://api.elxer.com/v2/elxerone/agent-list"  
 API_TOKEN = "36A9F18467C3EFD17E223FA46A3E4"  
 
+SECRET_KEY = "super-secret-key"
 
 
 def login(request):  
@@ -261,8 +264,8 @@ def download_report(request):
         #fetch data from DB based on from_date and to_date
         from_date_obj = datetime.datetime.strptime(from_date, "%Y-%m-%d")
         to_date_obj = datetime.datetime.strptime(to_date, "%Y-%m-%d")
-
-
+        action = request.POST.get("action")
+        print(f"Action: {action}")
         
         fetch_data=stockdata(emp_id,from_date_obj,to_date_obj,report_type)
 
@@ -315,7 +318,7 @@ def download_report(request):
             return response
         
         elif file_type.lower() == "pdf":
-            return generate_pdf_report(df, from_date, to_date, report_type)
+            return generate_pdf_report(request,df, from_date, to_date, report_type,action)
         else:
             return HttpResponse("Invalid file type", status=400)
 
@@ -390,11 +393,16 @@ def stockdata(emp_id,from_date_obj,to_date_obj,type):
     
 
 
-def generate_pdf_report(df, from_date, to_date, report_type):
+def generate_pdf_report(request, df, from_date, to_date, report_type, action="download"):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=landscape(A4))
     elements = []
-
+    
+    filename = f"Stocks_{report_type}_{from_date}_to_{to_date}.pdf"
+    output_filepath = os.path.join(settings.MEDIA_ROOT, filename)
+        
+        # Ensure the media directory exists before writing
+    os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
     styles = getSampleStyleSheet()
     elements.append(
     Paragraph('<font color="#0077db">Elxer Employee Stock Report</font>',styles["Title"]
@@ -422,11 +430,44 @@ def generate_pdf_report(df, from_date, to_date, report_type):
     
     elements.append(table)
     doc.build(elements)
-    buffer.seek(0)
+    buffer.seek(0)  
+     
+    with open(output_filepath, "wb") as f:
+        f.write(buffer.getvalue())
+    print(f"Report successfully saved to {output_filepath}")
+    base_url = "http://127.0.0.1:8000"
+    file_url = base_url + settings.MEDIA_URL + filename
+    short_url = shorten_link(file_url)
+    print(f"Shortened URL: {short_url}")
+    message = urllib.parse.quote(f"Hello, your requested stock report is ready.")
+    if action == "share":
+        return redirect(f"https://wa.me/?text={message}{short_url}")
+    else:
+        return FileResponse(
+            buffer,
+            as_attachment=True,
+            filename=f"Stocks_{report_type}_{from_date}_to_{to_date}.pdf",
+            content_type='application/pdf'
+        )
+    
+    
+    
+#link shortner for security
+def shorten_link(file_relative_path):
+    """
+    Shortens a given URL into a secure encoded token-based short link.
+    """
+    serializer = URLSafeSerializer(secret_key=SECRET_KEY)
+    token = serializer.dumps(file_relative_path)  
+    
+    return token
 
-    return FileResponse(
-        buffer,
-        as_attachment=True,
-        filename=f"Stocks_{report_type}_{from_date}_to_{to_date}.pdf",
-        content_type='application/pdf'
-    )
+
+
+def share_report(req):
+    if req.method == "POST":
+        action = req.POST.get("action")
+        print(f"Action: {action}")
+        
+        
+    return redirect(req.META.get('HTTP_REFERER', '/'))  # Redirect back to the previous page

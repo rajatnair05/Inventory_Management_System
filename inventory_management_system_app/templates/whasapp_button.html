@@ -114,7 +114,7 @@
   <div id="formBackdrop" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-40 transition-opacity duration-300"></div>
 
   <!-- Modal -->
-  <div id="formModalCard" class="hidden fixed inset-0 flex items-center justify-center z-50 px-4">
+  <div id="formModalCard" class="hidden  fixed inset-0 flex items-center justify-center z-50 px-4">
     <div class="relative w-full max-w-sm sm:max-w-md rounded-xl bg-white p-6 shadow-lg backdrop-blur-md animate-fadeInUp">
       <!-- Close Button -->
       <button id="closeFormBtn" class="absolute right-3 top-3 text-gray-600 hover:text-gray-900 text-2xl font-bold">&times;</button>
@@ -146,40 +146,62 @@
         <span>or</span>
         <span class="ml-2 flex-grow border-t border-gray-300 transition-all duration-500 ease-in-out"></span>
       </div>
-
-      <!-- Download & Share Buttons -->
+      
+      
       <div class="flex justify-center gap-3 mt-6">
-        <button
+      
+          <button type="submit"  id="share-report-btn"
           class="rounded-full bg-green-500 px-5 py-2 text-white border-2 border-transparent
-                 transition-all duration-500 ease-in-out
-                 hover:border-green-500 hover:bg-white hover:text-green-500 hover:shadow-md">
+          transition-all duration-500 ease-in-out
+          hover:border-green-500 hover:bg-white hover:text-green-500 hover:shadow-md">
           Download & Share
         </button>
+      
       </div>
     </div>
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const formModalCard = document.getElementById('formModalCard');
-      const formBackdrop = document.getElementById('formBackdrop');
-      const openFormBtn = document.getElementById('openFormBtn');
-      const closeFormBtn = document.getElementById('closeFormBtn');
+  document.addEventListener('DOMContentLoaded', function () {
+    const formModalCard = document.getElementById('formModalCard');
+    const formBackdrop = document.getElementById('formBackdrop');
+    const openFormBtn = document.getElementById('openFormBtn');
+    const closeFormBtn = document.getElementById('closeFormBtn');
+    const whatsappBtn = document.getElementById('share-report-btn');
 
-      function openFormModal() {
+    // Global functions
+    window.openFormModal = function() {
         formBackdrop.classList.remove('hidden');
         formModalCard.classList.remove('hidden');
-      }
+    }
 
-      function closeFormModal() {
+    window.closeFormModal = function() {
         formBackdrop.classList.add('hidden');
         formModalCard.classList.add('hidden');
-      }
+    }
 
-      openFormBtn.addEventListener('click', openFormModal);
-      closeFormBtn.addEventListener('click', closeFormModal);
-      formBackdrop.addEventListener('click', closeFormModal);
-    });
-  </script>
+    // Open & Close logic for main button
+    openFormBtn.addEventListener('click', window.openFormModal);
+    closeFormBtn.addEventListener('click', window.closeFormModal);
+    formBackdrop.addEventListener('click', window.closeFormModal);
+
+    // WhatsApp button triggers the same modal
+    whatsappBtn.addEventListener('click', function() {
+    // Close current modal if open
+    window.closeFormModal();
+
+    // Open download modal with action="share"
+    if(window.openDownloadModal) {
+        window.openDownloadModal("share");
+    } else {
+        console.error("Download modal function not found!");
+    }
+});
+
+});
+</script>
+
+
+
 </body>
 </html>

@@ -162,3 +162,9 @@ REST_FRAMEWORK = {
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "inventory_management_system_project.settings")
 django.setup()
+
+
+
+#media 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = "/media/"

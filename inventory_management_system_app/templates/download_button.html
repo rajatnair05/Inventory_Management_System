@@ -144,7 +144,7 @@ input[id="radio-6"]:checked ~ .glider { transform: translateX(220%); }
 
 .material-input input[type="date"]:focus {
     outline: none;
-    border-bottom-color: #185ee0;
+    border-bottom-color: #0077db;
 }
 
 .material-input label {
@@ -162,7 +162,7 @@ input[id="radio-6"]:checked ~ .glider { transform: translateX(220%); }
     top: -0.5rem;
     left: 0;
     font-size: 0.8rem;
-    color: #185ee0;
+    color: #0077db;
 }
 
 @media (max-width: 640px) {
@@ -200,18 +200,18 @@ input[id="radio-6"]:checked ~ .glider { transform: translateX(220%); }
 <div id="backdrop" class="fixed inset-0 backdrop-blur-sm bg-black/50 hidden z-40 flex items-center justify-center">
     <div id="modal" class="bg-white rounded-xl p-6 sm:p-8 text-gray-800 shadow-xl border border-gray-300 max-w-md w-full mx-4 relative">
         <button id="close" class="absolute top-2 right-2 text-gray-500 hover:text-gray-900 text-2xl font-bold z-10">&times;</button>
-        <p class="text-center text-xl sm:text-2xl font-bold text-blue-800 mb-4">Download Report</p>
+        <p class="text-center text-xl sm:text-2xl font-bold text-[#0077db] mb-4">Download Report</p>
 
         <form id="downloadForm" class="space-y-6" method="post" action="{% url 'download_report' %}">
             {% csrf_token %}
             <input type="hidden" name="emp_id" value="{{ emp_id }}">
 
-            <div class="material-input">
-                <input type="date" id="from_date" name="from_date" placeholder=" " required>
+            <div class="material-input ">
+                <input type="date"  id="from_date" name="from_date" placeholder=" " required>
                 <label for="from_date">From Date</label>
             </div>
 
-            <div class="material-input">
+            <div class="material-input ">
                 <input type="date" id="to_date" name="to_date" placeholder=" " required>
                 <label for="to_date">To Date</label>
             </div>
@@ -238,9 +238,9 @@ input[id="radio-6"]:checked ~ .glider { transform: translateX(220%); }
                     <span class="glider"></span>
                 </div>
             </div>
-
+            <input type="hidden" name="action" id="modalAction" value="download">
             <button type="submit"
-                class="w-full bg-blue-800 text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors">
+                class="w-full bg-[#0077db] text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors">
                 Submit
             </button>
         </form>
@@ -248,6 +248,7 @@ input[id="radio-6"]:checked ~ .glider { transform: translateX(220%); }
 </div>
 
 <!-- ------------------ JavaScript ------------------ -->
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const downloadBtn = document.getElementById('downloadBtn');
@@ -255,32 +256,40 @@ document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('modal');
     const closeBtn = document.getElementById('close');
     const form = document.getElementById('downloadForm');
+    const hiddenInput = document.getElementById('modalAction');
 
-    function openModal() {
+    // Open modal function with dynamic action
+    window.openDownloadModal = function(actionType = "download") {
         backdrop.classList.remove('hidden');
         modal.classList.remove('hidden');
+        hiddenInput.value = actionType; // set hidden input
     }
 
+    // Close modal
     function closeModal() {
         backdrop.classList.add('hidden');
         modal.classList.add('hidden');
     }
 
-    downloadBtn.addEventListener('click', openModal);
+    // Open modal when download button is clicked
+    if(downloadBtn){
+        downloadBtn.addEventListener('click', function(){
+            window.openDownloadModal("download");
+        });
+    }
+
     closeBtn.addEventListener('click', closeModal);
     backdrop.addEventListener('click', closeModal);
     modal.addEventListener('click', e => e.stopPropagation());
 
+    // Form submit
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         closeModal();
-
-        // Optional: simulate download animation
-        downloadBtn.classList.add('submitted');
-
-        // Normal form submission
+        downloadBtn.classList.add('submitted'); // optional animation
         form.submit();
     });
 });
 </script>
+
 {% endblock %}
