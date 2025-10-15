@@ -37,5 +37,6 @@ urlpatterns=[
     path('issue/<str:emp_id>/', Issue, name='issue'),
     path('return/<str:emp_id>/', return_products, name='return'),
     path("download-report/", download_report, name="download_report"),
-    path("share-report/", share_report, name="share_report"),
+    path("download/<str:token>/", download_file, name="download_file"),
+    # path("share-report/", share_report, name="share_report"),
 ]

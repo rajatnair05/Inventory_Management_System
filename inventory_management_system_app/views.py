@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 import json
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, FileResponse, Http404
 from django.contrib import messages
 import datetime
 import mysql.connector
@@ -21,6 +21,8 @@ from django.conf import settings
 import os
 from itsdangerous import URLSafeSerializer
 import urllib.parse
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+from django.http import FileResponse, HttpResponse, Http404
 
 API_BASE_URL = "http://api.elxer.com/v2/elxerone/agent-list"  
 API_TOKEN = "36A9F18467C3EFD17E223FA46A3E4"  
@@ -254,6 +256,84 @@ def return_products(request, emp_id):
 
 
 
+def shorten_link(filename):
+    """
+    Generates a secure, time-limited token for file download.
+    """
+    serializer = URLSafeTimedSerializer(secret_key=SECRET_KEY)
+    token = serializer.dumps(filename)
+    return token
+
+def download_file(request, token):
+    """
+    Serves the file for download via a secure token.
+    """
+    serializer = URLSafeTimedSerializer(secret_key=SECRET_KEY)
+    try:
+        # Token valid for 10 minutes
+        filename = serializer.loads(token, max_age=600)
+        file_path = os.path.join(settings.MEDIA_ROOT, filename)
+        if os.path.exists(file_path):
+            return FileResponse(open(file_path, 'rb'), as_attachment=True)
+        else:
+            raise Http404("File not found.")
+    except SignatureExpired:
+        raise Http404("Link expired.")
+    except BadSignature:
+        raise Http404("Invalid link.")
+
+# ===============================
+# 🔹 STOCK DATA FETCH LOGIC
+# ===============================
+def stockdata(emp_id, from_date_obj, to_date_obj, type):
+    if type == "issue" or type == "return":
+        stockdata = (
+            StockLedgerLineItems.objects
+            .select_related('doc', 'user', 'product_item')
+            .filter(
+                user__employee_id=emp_id,
+                date__date__range=(from_date_obj, to_date_obj),
+                doc__type=type
+            )
+            .values(
+                'user__employee_id',
+                'user__user_name',
+                'date',
+                'doc__type',
+                'product_item__product',
+                'qty',
+                'unit',
+                'sr_no',
+                'reading_from',
+                'reading_to',
+            )
+        )
+    else:
+        stockdata = (
+            StockLedgerLineItems.objects
+            .select_related('doc', 'user', 'product_item')
+            .filter(
+                user__employee_id=emp_id,
+                date__date__range=(from_date_obj, to_date_obj)
+            )
+            .values(
+                'user__employee_id',
+                'user__user_name',
+                'date',
+                'doc__type',
+                'product_item__product',
+                'qty',
+                'unit',
+                'sr_no',
+                'reading_from',
+                'reading_to',
+            )
+        )
+    return stockdata
+
+# ===============================
+# 🔹 DOWNLOAD REPORT
+# ===============================
 def download_report(request):
     if request.method == "POST":
         from_date = request.POST.get("from_date")
@@ -261,19 +341,18 @@ def download_report(request):
         report_type = request.POST.get("tabs1")
         file_type = request.POST.get("tabs2")
         emp_id = request.POST.get("emp_id")
-        #fetch data from DB based on from_date and to_date
-        from_date_obj = datetime.datetime.strptime(from_date, "%Y-%m-%d")
-        to_date_obj = datetime.datetime.strptime(to_date, "%Y-%m-%d")
-        action = request.POST.get("action")
-        print(f"Action: {action}")
-        
-        fetch_data=stockdata(emp_id,from_date_obj,to_date_obj,report_type)
+        action = request.POST.get("action")  # "download" or "share"
 
         # Debug print
+        print(f"Action: {action}")
         print(f"Received Data => From: {from_date}, To: {to_date}, {report_type}")
 
+        # Convert to datetime
+        from_date_obj = datetime.datetime.strptime(from_date, "%Y-%m-%d")
+        to_date_obj = datetime.datetime.strptime(to_date, "%Y-%m-%d")
+
         # Fetch data
-        
+        fetch_data = stockdata(emp_id, from_date_obj, to_date_obj, report_type)
         df = pd.DataFrame(list(fetch_data))
 
         # Make datetime columns timezone naive
@@ -281,6 +360,8 @@ def download_report(request):
             if pd.api.types.is_datetime64_any_dtype(df[col]):
                 if getattr(df[col].dt, 'tz', None) is not None:
                     df[col] = df[col].dt.tz_convert(None)
+
+        # Rename columns
         df.rename(columns={
             'user__employee_id': 'Employee ID',
             'user__user_name': 'Employee Name',
@@ -293,133 +374,57 @@ def download_report(request):
             'reading_from': 'Reading From',
             'reading_to': 'Reading To',
         }, inplace=True)
-        
-        
-            
+
+        # ===============================
+        # Generate files based on type
+        # ===============================
         output = io.BytesIO()
         if file_type.lower() == "xlsx":
             with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
                 df.to_excel(writer, index=False, sheet_name='Products')
-        
             output.seek(0)
-
             return FileResponse(
                 output,
                 as_attachment=True,
-                filename="Stocks.xlsx",
+                filename=f"Stocks_{report_type}_{from_date}_to_{to_date}.xlsx",
                 content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             )
         elif file_type.lower() == "csv":
             df.to_csv(output, index=False, encoding='utf-8')
             output.seek(0)
             filename = f"Stocks_{report_type}_{from_date}_to_{to_date}.csv"
-            content_type = 'text/csv'
-            response = FileResponse(output, as_attachment=True, filename=filename, content_type=content_type)
-            return response
-        
+            return FileResponse(output, as_attachment=True, filename=filename, content_type='text/csv')
         elif file_type.lower() == "pdf":
-            return generate_pdf_report(request,df, from_date, to_date, report_type,action)
+            return generate_pdf_report(request, df, from_date, to_date, report_type, action)
         else:
             return HttpResponse("Invalid file type", status=400)
 
     return HttpResponse("Invalid request method", status=400)
 
-
-def network(request):
-    return render(request, 'network.html')
-
-
-
-def data(request):
-    return render(request, 'data.html')
-
-
-
-def inventory(request):
-    return render(request, 'add_items.html')
-
-
-
-def update_items(request):
-    return render(request, 'update_items.html')
-
-
-#playaround
-def sample(req):
-    return render(req, 'rough.html')
-
-def stockdata(emp_id,from_date_obj,to_date_obj,type):
-    if type == "issue" or type == "return":
-        stockdata = (StockLedgerLineItems.objects
-                .select_related('doc', 'user', 'product_item')
-                .filter(
-                    user__employee_id=emp_id,
-                    date__date__range=(from_date_obj, to_date_obj),doc__type=type)
-                .values(
-                    'user__employee_id',
-                    'user__user_name',
-                    'date',
-                    'doc__type',
-                    'product_item__product',
-                    'qty',
-                    'unit',
-                    'sr_no',
-                    'reading_from',
-                    'reading_to',
-                )
-            )
-        return stockdata
-    else:
-        stockdata = (StockLedgerLineItems.objects
-                .select_related('doc', 'user', 'product_item')
-                .filter(
-                    user__employee_id=emp_id,
-                    date__date__range=(from_date_obj, to_date_obj)
-                )
-                .values(
-                    'user__employee_id',
-                    'user__user_name',
-                    'date',
-                    'doc__type',
-                    'product_item__product',
-                    'qty',
-                    'unit',
-                    'sr_no',
-                    'reading_from',
-                    'reading_to',
-                )
-            )
-        return stockdata
-    
-
-
+# ===============================
+# 🔹 PDF REPORT GENERATOR
+# ===============================
 def generate_pdf_report(request, df, from_date, to_date, report_type, action="download"):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=landscape(A4))
     elements = []
-    
+
     filename = f"Stocks_{report_type}_{from_date}_to_{to_date}.pdf"
     output_filepath = os.path.join(settings.MEDIA_ROOT, filename)
-        
-        # Ensure the media directory exists before writing
     os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
+
     styles = getSampleStyleSheet()
-    elements.append(
-    Paragraph('<font color="#0077db">Elxer Employee Stock Report</font>',styles["Title"]
-    )
-)
+    elements.append(Paragraph('<font color="#0077db">Elxer Employee Stock Report</font>', styles["Title"]))
     elements.append(Paragraph(f"Report Type: {report_type}", styles["Normal"]))
     elements.append(Paragraph(f"From: {from_date}  To: {to_date}", styles["Normal"]))
     elements.append(Spacer(1, 12))
 
     # Convert dataframe to list of lists
     data = [df.columns.tolist()] + df.values.tolist()
-
-    # Create table with minimal styling
     table = Table(data, hAlign='CENTER')
     table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#0077db")),  # header background
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),                 # header text
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#0077db")),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 9),
@@ -427,47 +432,72 @@ def generate_pdf_report(request, df, from_date, to_date, report_type, action="do
         ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
         ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor("#F3F3FF")])
     ]))
-    
     elements.append(table)
     doc.build(elements)
-    buffer.seek(0)  
-     
+    buffer.seek(0)
+
+    # Save PDF locally
     with open(output_filepath, "wb") as f:
         f.write(buffer.getvalue())
-    print(f"Report successfully saved to {output_filepath}")
-    base_url = "http://127.0.0.1:8000"
-    file_url = base_url + settings.MEDIA_URL + filename
-    short_url = shorten_link(file_url)
-    print(f"Shortened URL: {short_url}")
-    message = urllib.parse.quote(f"Hello, your requested stock report is ready.")
+    print(f"Report saved to {output_filepath}")
+
+    # Secure time-limited download link
+    token = shorten_link(filename)
+    download_link = f"http://127.0.0.1:8000/download/{token}/"
+    print(f"Download link: {download_link}")
+    shareable_link = shorten_link_tinyurl(download_link)
+    print(f"Shortened link: {shareable_link}")
+    # WhatsApp message
+    message = f"Hello! Your requested stock report is ready.%0A%0ADownload here: {shareable_link}"
     if action == "share":
-        return redirect(f"https://wa.me/?text={message}{short_url}")
+        return redirect(f"https://wa.me/?text={message}")
     else:
         return FileResponse(
             buffer,
             as_attachment=True,
-            filename=f"Stocks_{report_type}_{from_date}_to_{to_date}.pdf",
+            filename=filename,
             content_type='application/pdf'
         )
-    
-    
-    
-#link shortner for security
-def shorten_link(file_relative_path):
+
+
+
+import requests
+
+def shorten_link_tinyurl(long_url):
     """
-    Shortens a given URL into a secure encoded token-based short link.
+    Shortens a given URL using TinyURL API.
+
+    Args:
+        long_url (str): The original URL to shorten.
+
+    Returns:
+        str: Shortened TinyURL if successful, else the original URL.
     """
-    serializer = URLSafeSerializer(secret_key=SECRET_KEY)
-    token = serializer.dumps(file_relative_path)  
+    api_url = f"http://tinyurl.com/api-create.php?url={long_url}"
     
-    return token
+    try:
+        response = requests.get(api_url)
+        response.raise_for_status()
+        short_url = response.text
+        return short_url
+    except requests.exceptions.RequestException as e:
+        print(f"Error shortening URL via TinyURL: {e}")
+        return long_url
 
+# ===============================
+# 🔹 SAMPLE PAGES
+# ===============================
+def network(request):
+    return render(request, 'network.html')
 
+def data(request):
+    return render(request, 'data.html')
 
-def share_report(req):
-    if req.method == "POST":
-        action = req.POST.get("action")
-        print(f"Action: {action}")
-        
-        
-    return redirect(req.META.get('HTTP_REFERER', '/'))  # Redirect back to the previous page
+def inventory(request):
+    return render(request, 'add_items.html')
+
+def update_items(request):
+    return render(request, 'update_items.html')
+
+def sample(req):
+    return render(req, 'rough.html')
