@@ -270,11 +270,12 @@ def download_file(request, token):
     """
     serializer = URLSafeTimedSerializer(secret_key=SECRET_KEY)
     try:
-        # Token valid for 10 minutes
-        filename = serializer.loads(token, max_age=600)
+        # Token valid for 1 hour
+        filename = serializer.loads(token, max_age=3600)
         file_path = os.path.join(settings.MEDIA_ROOT, filename)
         if os.path.exists(file_path):
             return FileResponse(open(file_path, 'rb'), as_attachment=True)
+            
         else:
             raise Http404("File not found.")
     except SignatureExpired:
@@ -383,17 +384,33 @@ def download_report(request):
             with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
                 df.to_excel(writer, index=False, sheet_name='Products')
             output.seek(0)
-            return FileResponse(
-                output,
-                as_attachment=True,
-                filename=f"Stocks_{report_type}_{from_date}_to_{to_date}.xlsx",
-                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            )
+            
+            #share a link when action is share
+            if action == "share":
+                filename = f"Stocks_{report_type}_{from_date}_to_{to_date}.xlsx"
+                with open(os.path.join(settings.MEDIA_ROOT, filename), "wb") as f:  
+                    f.write(output.getvalue())
+                    
+                return file_Serve_for_share(filename)
+            else:
+                return FileResponse(
+                    output,
+                    as_attachment=True,
+                    filename=f"Stocks_{report_type}_{from_date}_to_{to_date}.xlsx",
+                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                )
         elif file_type.lower() == "csv":
             df.to_csv(output, index=False, encoding='utf-8')
             output.seek(0)
             filename = f"Stocks_{report_type}_{from_date}_to_{to_date}.csv"
-            return FileResponse(output, as_attachment=True, filename=filename, content_type='text/csv')
+            #share a link when action is share
+            if action == "share":
+                filename = f"Stocks_{report_type}_{from_date}_to_{to_date}.csv"
+                with open(os.path.join(settings.MEDIA_ROOT, filename), "wb") as f:  
+                    f.write(output.getvalue())
+                return file_Serve_for_share(filename)
+            else:    
+                return FileResponse(output, as_attachment=True, filename=filename, content_type='text/csv')
         elif file_type.lower() == "pdf":
             return generate_pdf_report(request, df, from_date, to_date, report_type, action)
         else:
@@ -437,20 +454,13 @@ def generate_pdf_report(request, df, from_date, to_date, report_type, action="do
     buffer.seek(0)
 
     # Save PDF locally
-    with open(output_filepath, "wb") as f:
-        f.write(buffer.getvalue())
-    print(f"Report saved to {output_filepath}")
-
-    # Secure time-limited download link
-    token = shorten_link(filename)
-    download_link = f"http://127.0.0.1:8000/download/{token}/"
-    print(f"Download link: {download_link}")
-    shareable_link = shorten_link_tinyurl(download_link)
-    print(f"Shortened link: {shareable_link}")
-    # WhatsApp message
-    message = f"Hello! Your requested stock report is ready.%0A%0ADownload here: {shareable_link}"
+    
     if action == "share":
-        return redirect(f"https://wa.me/?text={message}")
+        with open(output_filepath, "wb") as f:
+            f.write(buffer.getvalue())
+            print(f"Report saved to {output_filepath}")
+
+        file_Serve_for_share(filename)
     else:
         return FileResponse(
             buffer,
@@ -501,3 +511,49 @@ def update_items(request):
 
 def sample(req):
     return render(req, 'rough.html')
+
+
+
+def file_Serve_for_share(filename):
+    token = shorten_link(filename)
+    download_link = f"http://127.0.0.1:8000/download/{token}/"
+    print(f"Download link: {download_link}")
+    shareable_link = shorten_link_tinyurl(download_link)
+    print(f"Shortened link: {shareable_link}")
+    # WhatsApp message
+    message = f"Hello! Your requested stock report is ready.%0A%0ADownload here: {shareable_link}"
+    return redirect(f"https://wa.me/?text={message}")
+
+
+
+import requests
+import random
+
+def get_zen_quote():
+    """
+    Fetches a random motivational quote from the ZenQuotes API.
+
+    Returns:
+        str: A formatted quote like — "Be yourself; everyone else is already taken. — Oscar Wilde"
+    """
+    api_url = "https://zenquotes.io/api/random"
+    try:
+        response = requests.get(api_url, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        quote = f"“{data[0]['q']}” — {data[0]['a']}"
+        return quote
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching quote: {e}")
+        # fallback quotes in case API fails
+        fallback_quotes = [
+            "“Act as if what you do makes a difference. It does.” — William James",
+            "“Success is not how high you have climbed, but how you make a positive difference to the world.” — Roy T. Bennett",
+            "“You do not find the happy life. You make it.” — Camilla Eyring Kimball",
+        ]
+        return random.choice(fallback_quotes)
+
+
+quote = get_zen_quote()
+print(quote)
+
