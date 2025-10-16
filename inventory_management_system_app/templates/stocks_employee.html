@@ -45,11 +45,14 @@
   </div>
   </div>
 
-  <div id="actions" class="bg-white h-16 my-8 rounded-2xl p-4 shadow-md flex justify-end items-center gap-10" >
-    
+  <div id="actions" class="bg-white h-16 my-8 rounded-2xl p-4 shadow-md flex justify-between items-center gap-10" >
+    <div id="quotediv">
+      <p class="text-[#0077db] font-semibold"> {{quotes}}</p>
+    </div> 
+    <div id="socials" class="flex gap-8">
     {% include "email_button.html" with emp_id=employee.employee_id %}
     {% include "whasapp_button.html" with emp_id=employee.employee_id %}
-    {% include "download_button.html" with emp_id=employee.employee_id %}
+    {% include "download_button.html" with emp_id=employee.employee_id %}</div>
   </div>
 
   <!-- Stocks Section -->

@@ -122,22 +122,15 @@
       <label class="mb-6 block text-center text-2xl font-medium text-gray-700">Upload File</label>
 
       <!-- File Input + Submit -->
-      <form class="flex flex-col gap-8">
+      <form class="flex flex-col gap-8" id="">
         <div class="relative w-full">
-          <input type="file"
+          <input type="text" id="copy_link_box"
           class="block w-full cursor-pointer rounded-full border-2 border-transparent text-sm text-gray-600
                  transition-all duration-500 ease-in-out
                  file:mr-4 file:rounded-full file:border-0 file:bg-blue-500 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white
                  file:transition-all file:duration-500 file:ease-in-out
-                 hover:border-blue-500 hover:file:bg-white hover:file:text-blue-500 hover:shadow-md" />
+                 hover:border-blue-500 hover:file:bg-white hover:file:text-blue-500 hover:shadow-md" value=""/>
         </div>
-
-        <button type="submit"
-          class="w-[100px] self-center rounded-full bg-blue-500 px-5 py-2 text-white border-2 border-transparent
-                 transition-all duration-500 ease-in-out
-                 hover:border-blue-500 hover:bg-white hover:text-blue-500 hover:shadow-md">
-          Submit
-        </button>
       </form>
 
       <!-- OR Separator -->
@@ -170,9 +163,12 @@
     const whatsappBtn = document.getElementById('share-report-btn');
 
     // Global functions
-    window.openFormModal = function() {
+    window.openFormModal = function(link="link hai bhai") {
         formBackdrop.classList.remove('hidden');
         formModalCard.classList.remove('hidden');
+        linkcopy = document.getElementById("copy_link_box");
+        linkcopy.value = link ;
+
     }
 
     window.closeFormModal = function() {
@@ -181,7 +177,7 @@
     }
 
     // Open & Close logic for main button
-    openFormBtn.addEventListener('click', window.openFormModal);
+    openFormBtn.addEventListener('click', function(){ window.openDownloadModal("share")});
     closeFormBtn.addEventListener('click', window.closeFormModal);
     formBackdrop.addEventListener('click', window.closeFormModal);
 
@@ -189,13 +185,7 @@
     whatsappBtn.addEventListener('click', function() {
     // Close current modal if open
     window.closeFormModal();
-
-    // Open download modal with action="share"
-    if(window.openDownloadModal) {
-        window.openDownloadModal("share");
-    } else {
-        console.error("Download modal function not found!");
-    }
+  
 });
 
 });

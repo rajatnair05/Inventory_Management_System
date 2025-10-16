@@ -23,6 +23,7 @@ from itsdangerous import URLSafeSerializer
 import urllib.parse
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from django.http import FileResponse, HttpResponse, Http404
+from .extra_addins import get_zen_quote
 
 API_BASE_URL = "http://api.elxer.com/v2/elxerone/agent-list"  
 API_TOKEN = "36A9F18467C3EFD17E223FA46A3E4"  
@@ -54,7 +55,7 @@ def stocks(req):
 def Employee_stock_detail(req, emp_id):
     
     employee = find_employee(emp_id)
-
+    quotes = get_zen_quote()
     stockdata = (
         StockLedgerLineItems.objects
         .select_related('doc', 'user', 'product_item')
@@ -78,7 +79,7 @@ def Employee_stock_detail(req, emp_id):
 
     a={'product_item_id': '1', 'product_item__product': 'GOPON -1000R -ONU (NORMAL ONU)', 'qty': '1', 'unit': 'PCS', 'sr_no': '1234567890', 'reading_from': '', 'reading_to': '', 'date': datetime.datetime(2025, 9, 26, 15, 1, 24, tzinfo=datetime.timezone.utc), 'doc__type': 'return', 'doc__user_id': 18, 'user__user_name': 'UMESH SONWANE', 'user__employee_id': 'ECS10002'}
 
-    return render(req, "stocks_employee.html", {"stocks": stockdata, "employee": employee})
+    return render(req, "stocks_employee.html", {"stocks": stockdata, "employee": employee,'quotes':quotes})
 
 
 
@@ -271,6 +272,7 @@ def download_file(request, token):
     serializer = URLSafeTimedSerializer(secret_key=SECRET_KEY)
     try:
         # Token valid for 1 hour
+        print("download link accessed")
         filename = serializer.loads(token, max_age=3600)
         file_path = os.path.join(settings.MEDIA_ROOT, filename)
         if os.path.exists(file_path):
@@ -408,7 +410,13 @@ def download_report(request):
                 filename = f"Stocks_{report_type}_{from_date}_to_{to_date}.csv"
                 with open(os.path.join(settings.MEDIA_ROOT, filename), "wb") as f:  
                     f.write(output.getvalue())
-                return file_Serve_for_share(filename)
+                
+                shareablelink,message_text = file_Serve_for_share(filename)
+                
+                return JsonResponse({
+            "share_url": shareablelink,
+            "message_text": message_text
+        })
             else:    
                 return FileResponse(output, as_attachment=True, filename=filename, content_type='text/csv')
         elif file_type.lower() == "pdf":
@@ -460,7 +468,7 @@ def generate_pdf_report(request, df, from_date, to_date, report_type, action="do
             f.write(buffer.getvalue())
             print(f"Report saved to {output_filepath}")
 
-        file_Serve_for_share(filename)
+        return file_Serve_for_share(filename)
     else:
         return FileResponse(
             buffer,
@@ -522,38 +530,6 @@ def file_Serve_for_share(filename):
     print(f"Shortened link: {shareable_link}")
     # WhatsApp message
     message = f"Hello! Your requested stock report is ready.%0A%0ADownload here: {shareable_link}"
-    return redirect(f"https://wa.me/?text={message}")
+    return shareable_link,message
 
-
-
-import requests
-import random
-
-def get_zen_quote():
-    """
-    Fetches a random motivational quote from the ZenQuotes API.
-
-    Returns:
-        str: A formatted quote like — "Be yourself; everyone else is already taken. — Oscar Wilde"
-    """
-    api_url = "https://zenquotes.io/api/random"
-    try:
-        response = requests.get(api_url, timeout=5)
-        response.raise_for_status()
-        data = response.json()
-        quote = f"“{data[0]['q']}” — {data[0]['a']}"
-        return quote
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching quote: {e}")
-        # fallback quotes in case API fails
-        fallback_quotes = [
-            "“Act as if what you do makes a difference. It does.” — William James",
-            "“Success is not how high you have climbed, but how you make a positive difference to the world.” — Roy T. Bennett",
-            "“You do not find the happy life. You make it.” — Camilla Eyring Kimball",
-        ]
-        return random.choice(fallback_quotes)
-
-
-quote = get_zen_quote()
-print(quote)
 

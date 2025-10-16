@@ -202,7 +202,7 @@ input[id="radio-6"]:checked ~ .glider { transform: translateX(220%); }
         <button id="close" class="absolute top-2 right-2 text-gray-500 hover:text-gray-900 text-2xl font-bold z-10">&times;</button>
         <p class="text-center text-xl sm:text-2xl font-bold text-[#0077db] mb-4">Download Report</p>
 
-        <form id="downloadForm" class="space-y-6" method="post" action="{% url 'download_report' %}">
+        <form id="downloadForm" class="space-y-6" method="post" >
             {% csrf_token %}
             <input type="hidden" name="emp_id" value="{{ emp_id }}">
 
@@ -238,17 +238,16 @@ input[id="radio-6"]:checked ~ .glider { transform: translateX(220%); }
                     <span class="glider"></span>
                 </div>
             </div>
-            <input type="hidden" name="action" id="modalAction" value="download">
-            <button type="submit"
-                class="w-full bg-[#0077db] text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors">
-                Submit
-            </button>
+         <input type="hidden" name="action" id="modalAction" value="download">
+<button id="actionBtn" class="bg-[#0077db] rounded-2xl w-full text-white px-4 py-2 rounded flex items-center justify-center">
+  <span class="btn-text">Submit</span>
+</button>
+
         </form>
     </div>
 </div>
 
 <!-- ------------------ JavaScript ------------------ -->
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const downloadBtn = document.getElementById('downloadBtn');
@@ -257,21 +256,41 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeBtn = document.getElementById('close');
     const form = document.getElementById('downloadForm');
     const hiddenInput = document.getElementById('modalAction');
+    const actionBtn = document.getElementById('actionBtn');
+    const btnText = actionBtn.querySelector('.btn-text');
 
-    // Open modal function with dynamic action
+    // ------------------ Loader Functions ------------------
+    function open_loader(button, text="Loading...") {
+        button.disabled = true;
+        const span = button.querySelector('.btn-text');
+         button.innerHTML = `
+        <span class="flex items-center justify-center gap-2 w-full">
+            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            <span>${text}</span>
+        </span>
+    `;
+    }
+
+    function close_loader(button, text="Submit") {
+        button.disabled = false;
+         button.innerHTML = `<span class="btn-text">${text}</span>`;
+    }
+
+    // ------------------ Modal Functions ------------------
     window.openDownloadModal = function(actionType = "download") {
         backdrop.classList.remove('hidden');
         modal.classList.remove('hidden');
         hiddenInput.value = actionType; // set hidden input
     }
 
-    // Close modal
     function closeModal() {
         backdrop.classList.add('hidden');
         modal.classList.add('hidden');
     }
 
-    // Open modal when download button is clicked
     if(downloadBtn){
         downloadBtn.addEventListener('click', function(){
             window.openDownloadModal("download");
@@ -282,14 +301,48 @@ document.addEventListener('DOMContentLoaded', function() {
     backdrop.addEventListener('click', closeModal);
     modal.addEventListener('click', e => e.stopPropagation());
 
-    // Form submit
+    // ------------------ Form Submit ------------------
     form.addEventListener('submit', function(e) {
         e.preventDefault();
-        closeModal();
-        downloadBtn.classList.add('submitted'); // optional animation
-        form.submit();
+        console.log("Form submitted with action:", hiddenInput.value);
+
+        open_loader(actionBtn, hiddenInput.value === "share" ? "Sharing..." : "Downloading...");
+
+        if (hiddenInput.value === "download") {
+            // Set form action and submit normally
+            form.action = "{% url 'download_report' %}";
+            form.submit(); 
+            setTimeout(() => {
+                close_loader(actionBtn); // re-enable button after a delay
+            }, 5000);
+            // Loader will remain active until browser handles download
+        } 
+        else if (hiddenInput.value === "share") {
+            fetch("{% url 'download_report' %}", {
+                method: "POST",
+                body: new FormData(form),
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error("Network response was not ok");
+                return response.json();
+            })
+            .then(data => { 
+                close_loader(actionBtn); // restore button after response
+                closeModal(); // close download modal
+                window.openFormModal(data.share_url); // open share modal with link
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                close_loader(actionBtn); // restore button even on error
+                alert("Failed to share. Try again!");
+            });
+        }
     });
 });
 </script>
+
 
 {% endblock %}
