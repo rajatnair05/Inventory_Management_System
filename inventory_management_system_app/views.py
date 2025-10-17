@@ -393,7 +393,12 @@ def download_report(request):
                 with open(os.path.join(settings.MEDIA_ROOT, filename), "wb") as f:  
                     f.write(output.getvalue())
                     
-                return file_Serve_for_share(filename)
+                shareablelink,message_text = file_Serve_for_share(filename)
+                
+                return JsonResponse({
+            "share_url": shareablelink,
+            "message_text": message_text
+        })
             else:
                 return FileResponse(
                     output,
@@ -468,7 +473,12 @@ def generate_pdf_report(request, df, from_date, to_date, report_type, action="do
             f.write(buffer.getvalue())
             print(f"Report saved to {output_filepath}")
 
-        return file_Serve_for_share(filename)
+        shareablelink,message_text = file_Serve_for_share(filename)
+                
+        return JsonResponse({
+            "share_url": shareablelink,
+            "message_text": message_text
+        })
     else:
         return FileResponse(
             buffer,
