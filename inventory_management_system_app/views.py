@@ -24,12 +24,19 @@ import urllib.parse
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from django.http import FileResponse, HttpResponse, Http404
 from .extra_addins import get_zen_quote
+import re
+from datetime import timedelta
+import os
+import sys
+import django
+
 
 API_BASE_URL = "http://api.elxer.com/v2/elxerone/agent-list"  
 API_TOKEN = "36A9F18467C3EFD17E223FA46A3E4"  
 
 SECRET_KEY = "super-secret-key"
-
+curr_date_time_find = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+curr_date_time=curr_date_time_find.replace(" ","_").replace(":","-")
 
 def login(request):  
     return render(request, 'login.html') 
@@ -55,6 +62,7 @@ def stocks(req):
 def Employee_stock_detail(req, emp_id):
     
     employee = find_employee(emp_id)
+    file_validity_checker()
     quotes = get_zen_quote()
     stockdata = (
         StockLedgerLineItems.objects
@@ -113,12 +121,7 @@ def find_employee(emp_id=None):
 
 import pytz
 
-# Define India timezone
 india_tz = pytz.timezone("Asia/Kolkata")
-
-# Get current time in India
-
-
 
 
 def Issue(request, emp_id):
@@ -281,6 +284,7 @@ def download_file(request, token):
         else:
             raise Http404("File not found.")
     except SignatureExpired:
+        
         raise Http404("Link expired.")
     except BadSignature:
         raise Http404("Invalid link.")
@@ -381,6 +385,7 @@ def download_report(request):
         # ===============================
         # Generate files based on type
         # ===============================
+        
         output = io.BytesIO()
         if file_type.lower() == "xlsx":
             with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
@@ -389,7 +394,7 @@ def download_report(request):
             
             #share a link when action is share
             if action == "share":
-                filename = f"Stocks_{report_type}_{from_date}_to_{to_date}.xlsx"
+                filename = f"Stocks_{report_type}_{from_date}_to_{to_date}_{(curr_date_time)}.xlsx"
                 with open(os.path.join(settings.MEDIA_ROOT, filename), "wb") as f:  
                     f.write(output.getvalue())
                     
@@ -403,16 +408,16 @@ def download_report(request):
                 return FileResponse(
                     output,
                     as_attachment=True,
-                    filename=f"Stocks_{report_type}_{from_date}_to_{to_date}.xlsx",
+                    filename=f"Stocks_{report_type}_{from_date}_to_{to_date}_{(curr_date_time)}.xlsx",
                     content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                 )
         elif file_type.lower() == "csv":
             df.to_csv(output, index=False, encoding='utf-8')
             output.seek(0)
-            filename = f"Stocks_{report_type}_{from_date}_to_{to_date}.csv"
+            filename = f"Stocks_{report_type}_{from_date}_to_{to_date}_{(curr_date_time)}.csv"
             #share a link when action is share
             if action == "share":
-                filename = f"Stocks_{report_type}_{from_date}_to_{to_date}.csv"
+                filename = f"Stocks_{report_type}_{from_date}_to_{to_date}_{(curr_date_time)}.csv"
                 with open(os.path.join(settings.MEDIA_ROOT, filename), "wb") as f:  
                     f.write(output.getvalue())
                 
@@ -439,7 +444,7 @@ def generate_pdf_report(request, df, from_date, to_date, report_type, action="do
     doc = SimpleDocTemplate(buffer, pagesize=landscape(A4))
     elements = []
 
-    filename = f"Stocks_{report_type}_{from_date}_to_{to_date}.pdf"
+    filename = f"Stocks_{report_type}_{from_date}_to_{to_date}_{curr_date_time}.pdf"
     output_filepath = os.path.join(settings.MEDIA_ROOT, filename)
     os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
 
@@ -543,3 +548,59 @@ def file_Serve_for_share(filename):
     return shareable_link,message
 
 
+def file_validity_checker():
+
+    project_root = r"C:\Users\rajat.n_elxer\OneDrive\Desktop\Ims\Inventory_Management_System"
+    sys.path.append(project_root)
+
+    os.environ.setdefault(
+        "DJANGO_SETTINGS_MODULE",
+        "inventory_management_system_project.settings"
+    )
+
+    django.setup()
+
+    # ---------------------------
+    # 4. Import settings
+    from django.conf import settings
+
+    # MEDIA folder path
+    folder_path = settings.MEDIA_ROOT
+    print("Media folder path:", folder_path)
+
+    # ---------------------------
+    # 5. Regex pattern to match date and time in filenames
+    # Example filename: report_2025-10-18_14-30-00.pdf
+    pattern = r"(\d{4}-\d{2}-\d{2})_(\d{2}-\d{2}-\d{2})"
+
+    # Current datetime
+    curr_datetime = datetime.datetime.now().replace(microsecond=0)
+    print("Current time:", curr_datetime)
+
+    # ---------------------------
+    # 6. Loop through files in media folder
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+        
+        if os.path.isfile(file_path):
+            print("\nFilename:", filename)
+            match = re.search(pattern, filename)
+            if match:
+                basedate, basetime = match.groups()
+                basetime_colon = basetime.replace("-", ":")
+                datetime_str = f"{basedate} {basetime_colon}"
+                try:
+                    dt_object = datetime.datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
+                    difftime = curr_datetime - dt_object
+                    
+                    # Check if older than or equal to 1 hour
+                    if difftime >= timedelta(hours=1):
+                        print(f"Deleting file: {filename} | Time difference: {difftime}")
+                        os.remove(file_path)
+                    else:
+                        print(f"File is recent: {filename} | Time difference: {difftime}")
+                        
+                except ValueError:
+                    print("Error: Could not parse datetime from filename")
+            else:
+                print("No datetime found in filename")

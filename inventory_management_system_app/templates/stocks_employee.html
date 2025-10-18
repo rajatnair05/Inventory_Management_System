@@ -45,15 +45,25 @@
   </div>
   </div>
 
-  <div id="actions" class="bg-white h-16 my-8 rounded-2xl p-4 shadow-md flex justify-between items-center gap-10" >
-    <div id="quotediv">
-      <p class="text-[#0077db] font-semibold"> {{quotes}}</p>
-    </div> 
-    <div id="socials" class="flex gap-8">
+  <div id="actions"
+  class="bg-white my-8 rounded-2xl p-4 shadow-md flex flex-col sm:flex-row justify-between items-center gap-6 sm:gap-10 w-full transition-all duration-300 sm:px-10"
+>
+  <!-- Quote Text -->
+  <div id="quotediv" class="text-center sm:text-left w-full sm:w-1/2 px-2">
+    <p class="text-[#0077db] font-semibold text-base sm:text-lg break-words">
+      {{ quotes }}
+    </p>
+  </div>
+
+  <!-- Action Buttons -->
+  <div id="socials" 
+       class="flex flex-wrap justify-center sm:justify-end gap-4 sm:gap-6 w-full sm:w-1/2">
     {% include "email_button.html" with emp_id=employee.employee_id %}
     {% include "whasapp_button.html" with emp_id=employee.employee_id %}
-    {% include "download_button.html" with emp_id=employee.employee_id %}</div>
+    {% include "download_button.html" with emp_id=employee.employee_id %}
   </div>
+</div>
+
 
   <!-- Stocks Section -->
   <div>

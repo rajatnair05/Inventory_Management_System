@@ -131,37 +131,31 @@
     type="text"
       id="copy_link_box"
   />
-  <button 
-    class="py-1 rounded-e-lg text-white bg-[#0077db] flex justify-center items-center w-10 h-10" id="copyBtn" type="button"
+  <button
+  id="copyBtn"
+  type="button"
+  class="py-1 rounded-e-lg bg-white flex justify-center items-center w-10 h-10 border border-[#0077db]"
+>
+  <svg
+    id="copyIcon"
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="#0077db"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="transition-colors duration-300"
   >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      class="pointer-events-none"
-    >
-      <rect width="24" height="24"></rect>
-      <rect
-        x="4"
-        y="8"
-        width="12"
-        height="12"
-        rx="1"
-        stroke="#000000"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      ></rect>
-      <path
-        d="M8 6V5C8 4.44772 8.44772 4 9 4H19C19.5523 4 20 4.44772 20 5V15C20 15.5523 19.5523 16 19 16H18"
-        stroke="#000000"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-dasharray="2 2"
-      ></path>
-    </svg>
-  </button>
+    <rect x="4" y="8" width="12" height="12" rx="1"></rect>
+    <path
+      d="M8 6V5C8 4.44772 8.44772 4 9 4H19C19.5523 4 20 4.44772 20 5V15C20 15.5523 19.5523 16 19 16H18"
+      stroke-dasharray="2 2"
+    ></path>
+  </svg>
+</button>
 
 
 
@@ -207,19 +201,21 @@
         
 
     }
-      document.getElementById('copyBtn').addEventListener('click', () => {
-        navigator.clipboard.writeText(document.getElementById("copy_link_box").value)
-         .then(() => {
-      btn.classList.remove('bg-[#0077db]');
-      btn.classList.add('bg-green-500');
-      setTimeout(() => {
-        btn.classList.remove('bg-green-500');
-        btn.classList.add('bg-[#0077db]');
-      }, 2000);
-    })
-        .catch(err => alert('Failed to copy: ' + err)); 
-  });
+    document.getElementById("copyBtn").addEventListener("click", () => {
+    const icon = document.getElementById("copyIcon");
 
+    // change icon color to green
+    btn.classList.remove("border-[#0077db]");
+    icon.setAttribute("stroke", "#22c55e");
+    btn.classList.add("border-green-500");
+
+    // revert to blue after 2 seconds
+    setTimeout(() => {
+      btn.classList.remove("border-green-500");
+      icon.setAttribute("stroke", "#0077db");
+      btn.classList.add("border-[#0077db]");
+    }, 1000);
+  });
 
 
     window.closeFormModal = function() {
