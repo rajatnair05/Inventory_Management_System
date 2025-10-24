@@ -20,6 +20,23 @@
 
 </head>
 <body class="bg-[#f4f6f9] text-gray-900 antialiased">
+  {% if messages %}
+  <div id="flash-messages" class="fixed top-4 right-4 z-50 space-y-2">
+    {% for message in messages %}
+      <div class="px-4 py-2 rounded-lg shadow text-sm font-medium {{ message.tags }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+
+  <script>
+    // Auto-hide messages after 3 seconds
+    setTimeout(() => {
+      const container = document.getElementById('flash-messages');
+      if (container) container.remove();
+    }, 3000);
+  </script>
+{% endif %}
 
 <!-- ------------------ Page Loader ------------------ -->
 <div id="pageLoader" class="fixed inset-0 z-[99999] bg-white flex flex-col items-center justify-center transition-opacity duration-700 opacity-100">
@@ -123,5 +140,6 @@
   };
 </script>
   
+
 </body>
 </html>

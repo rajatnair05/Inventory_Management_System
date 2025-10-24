@@ -58,9 +58,9 @@
   <!-- Action Buttons -->
   <div id="socials" 
        class="flex flex-wrap justify-center sm:justify-end gap-4 sm:gap-6 w-full sm:w-1/2">
-    {% include "email_button.html" with emp_id=employee.employee_id %}
+    {% include "email_button.html" with emp_id=employee.employee_id emp_mail=employee.email %}
     {% include "whasapp_button.html" with emp_id=employee.employee_id %}
-    {% include "download_button.html" with emp_id=employee.employee_id %}
+    {% include "download_button.html" with emp_id=employee.employee_id  emp_mail=employee.email %}
   </div>
 </div>
 
