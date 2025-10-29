@@ -8,6 +8,10 @@
   <link rel="icon" href="{% static 'res/favicon.ico' %}" type="image/x-icon" />
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
   
   <!-- Apple-like font stack -->
   <style>
@@ -33,20 +37,16 @@
 
   
 </div>
-
-
-
-
-
-
   <!-- Navbar -->
-  <nav class="border-b border-gray-200 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   
+
+     <nav class="border-b shadow-sm border-gray-200 bg-white fixed top-0 w-full z-50">
+       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-16">
         
         <!-- Left: Apple-style Logo -->
         <div class="flex items-center">
-          <a href="#" class="flex items-center space-x-1">
+          <a href="/ims" class="flex items-center space-x-1">
             <img src="{% static 'res/Elxer_logo.svg' %}" alt="logo" class=" h-32 w-32 object-contain">
             <span class="font-bold text-xl text-[#0077db] ml-2">IMS</span>
           </a>
@@ -59,7 +59,7 @@
           <a href="#" class="hover:text-gray-900 text-gray-600 transition text-base">Products</a>
           <a href="#" class="hover:text-gray-900 text-gray-600 transition text-base">Reporting</a>
         </div>
-
+        
         <!-- Right Icons -->
         <div class="flex items-center space-x-4">
           <button class="text-gray-600 hover:text-black transition">
@@ -75,18 +75,19 @@
         </div>
       </div>
     </div>
-
+    
     <!-- Mobile Menu -->
     <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200 bg-white">
-      <a href="#" class="block px-4 py-3 text-gray-700 hover:bg-gray-100">Overview</a>
+      <a href="#" class="block px-4 py-3 text-gray-700 hover:bg-gray-100" style="margin-right:0px;">Overview</a>
       <a href="#" class="block px-4 py-3 text-gray-700 hover:bg-gray-100">Operations</a>
       <a href="#" class="block px-4 py-3 text-gray-700 hover:bg-gray-100">Products</a>
       <a href="#" class="block px-4 py-3 text-gray-700 hover:bg-gray-100">Reporting</a>
     </div>
   </nav>
 
+
   <!-- Page Content -->
-  <main class="min-h-screen">
+  <main class="min-h-screen pt-16">
     {% block content %}{% endblock content %}
   </main>
 

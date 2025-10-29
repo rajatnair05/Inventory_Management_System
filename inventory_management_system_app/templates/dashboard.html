@@ -4,62 +4,45 @@
 {% block title %}Inventory Management System{% endblock title %}
 
 {% block content %}
+<div class="flex flex-wrap justify-center gap-6 py-16 px-6 overflow-x-auto">
+  <!-- Network Card -->
+  <a href="{% url 'network' %}"
+     class="group card-link max-w-xs min-w-[260px] w-full p-6 bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-blue-400 flex flex-col items-center focus:ring focus:ring-blue-400/50
+            hover:-translate-y-1 hover:scale-105">
+    <img src="{% static 'res/network.svg' %}" alt="Network Icon"
+         class="h-36 w-full rounded-2xl mb-6 object-contain group-hover:scale-110 transition-transform duration-300" />
+    <span class="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">Network</span>
+    <span class="text-sm text-gray-400 mt-3 text-center">Connections & Devices</span>
+  </a>
 
+  <!-- Inventory Card -->
+  <a href="{% url 'inventory' %}"
+     class="group card-link max-w-xs min-w-[260px] w-full p-6 bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-green-400 flex flex-col items-center focus:ring focus:ring-green-400/50
+            hover:-translate-y-1 hover:scale-105">
+    <img src="{% static 'res/inventory.svg' %}" alt="Inventory Icon"
+         class="h-36 w-full rounded-2xl object-contain mb-6 group-hover:scale-110 transition-transform duration-300" />
+    <span class="text-lg font-semibold text-gray-800 group-hover:text-green-600 transition-colors">Inventory</span>
+    <span class="text-sm text-gray-400 mt-3 text-center">Items & Movement</span>
+  </a>
 
+  <!-- Stocks Card -->
+  <a href="{% url 'stocks' %}"
+     class="group card-link max-w-xs min-w-[260px] w-full p-6 bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-yellow-400 flex flex-col items-center focus:ring focus:ring-yellow-400/50
+            hover:-translate-y-1 hover:scale-105">
+    <img src="{% static 'res/stocks.svg' %}" alt="Stocks Icon"
+         class="h-36 w-full rounded-2xl object-contain mb-6 group-hover:scale-110 transition-transform duration-300" />
+    <span class="text-lg font-semibold text-gray-800 group-hover:text-yellow-500 transition-colors">Stocks</span>
+    <span class="text-sm text-gray-400 mt-3 text-center">Shelf Status</span>
+  </a>
 
-  <div class="row" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 100px; margin: 50px 0;">
-    <div class="card-link bg-white p-6 rounded-lg transition-all duration-300 ease-in-out cursor-pointer shadow-[0_0_15px_rgba(0,0,0,0.2)] hover:shadow-[0_0_25px_rgba(0,0,0,0.25)] hover:ring-2 hover:ring-blue-400 hover:scale-[1.02]" data-url="network">
-
-        <div class="card" style="width: 14rem; align-items: center; margin: 20px; cursor: pointer;">
-          <img src="{% static 'res/network.png' %}" class="card-img-top" alt="Card Image" style="cursor: pointer; margin-bottom:30px;">
-            <div class="card-body">
-                <p class="card-text" style="text-align: center;"><a href="{% url 'network' %}" style="text-decoration: none; color: black;"><b>Network</b></a></p>
-            </div>
-        </div>
-    </div>
-
-    <div class="card-link bg-white p-6 rounded-lg transition-all duration-300 ease-in-out cursor-pointer shadow-[0_0_15px_rgba(0,0,0,0.2)] hover:shadow-[0_0_25px_rgba(0,0,0,0.25)] hover:ring-2 hover:ring-blue-400 hover:scale-[1.02]" data-url="inventory">
-
-      <a style="text-decoration: none; color: inherit;">
-        <div class="card" style="width: 14rem; align-items: center; margin: 20px; cursor: pointer;">
-          <img src="{% static 'res/inventory.png' %}" class="card-img-top" alt="Card Image" style="cursor: pointer; margin-bottom:30px;" onclick="window.location.href='inventory';">
-            <div class="card-body">
-                <p class="card-text" style="text-align: center;"><b>Inventory</b></p>
-            </div>
-        </div>
-      </a>
-    </div>
-
-    <div class="card-link bg-white p-6 rounded-lg transition-all duration-300 ease-in-out cursor-pointer shadow-[0_0_15px_rgba(0,0,0,0.2)] hover:shadow-[0_0_25px_rgba(0,0,0,0.25)] hover:ring-2 hover:ring-blue-400 hover:scale-[1.02]" data-url="stocks">
-      <a style="text-decoration: none; color: inherit;" href="{% url 'stocks' %}">
-        <div class="card" style="width: 14rem; align-items: center; margin: 20px; cursor: pointer;">
-          <img src="https://img.freepik.com/premium-vector/boy-is-checking-products-rack_118167-3199.jpg?w=2000" class="card-img-top" alt="Card Image" style="cursor: pointer; margin-bottom:30px;" onclick="window.location.href='stocks';">
-            <div class="card-body">
-                <p class="card-text" style="text-align: center;"><b>Stocks</b></p>
-            </div>
-        </div>
-      </a>
-    </div>
-    
-
-    <div class="card-link bg-white p-6 rounded-lg transition-all duration-300 ease-in-out cursor-pointer shadow-[0_0_15px_rgba(0,0,0,0.2)] hover:shadow-[0_0_25px_rgba(0,0,0,0.25)] hover:ring-2 hover:ring-blue-400 hover:scale-[1.02]" data-url="data">
-
-      <a style="text-decoration: none; color: inherit;">
-        <div class="card" style="width: 14rem; align-items: center; margin: 20px; cursor: pointer;">
-          <img src="https://img.freepik.com/free-vector/information-center-isometric-illustration_1284-15679.jpg?ga=GA1.1.157356526.1735382063&semt=ais_hybrid" class="card-img-top" 
-          alt="Card Image" style="cursor: pointer; margin-bottom:30px;" onclick="window.location.href='data';">
-            <div class="card-body">
-                <p class="card-text" style="text-align: center;"><b>Data</b></p>
-            </div>
-        </div>
-      </a>
-    </div>
-
-  </div>
-    
-</html>
-
+  <!-- Data Card -->
+  <a href="{% url 'data' %}"
+     class="group card-link max-w-xs min-w-[260px] w-full p-6 bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-purple-400 flex flex-col items-center focus:ring focus:ring-purple-400/50
+            hover:-translate-y-1 hover:scale-105">
+    <img src="{% static 'res/data.svg' %}" alt="Data Icon"
+         class="h-36 w-full rounded-2xl object-contain mb-6 group-hover:scale-110 transition-transform duration-300" />
+    <span class="text-lg font-semibold text-gray-800 group-hover:text-purple-500 transition-colors">Data</span>
+    <span class="text-sm text-gray-400 mt-3 text-center">Organize & Security</span>
+  </a>
+</div>
 {% endblock content %}
-
-
-<!-- new photo that i used for data: "https://img.freepik.com/premium-vector/woman-organizes-data-storage-store-privacy-data-safely-data-management-concept-flat-vector-illustration_923732-5195.jpg?w=2000" -->

@@ -29,13 +29,16 @@ from datetime import timedelta
 import os
 import sys
 import django
+from django.urls import reverse
+
+india_tz = pytz.timezone("Asia/Kolkata")
 
 
 API_BASE_URL = "http://api.elxer.com/v2/elxerone/agent-list"  
 API_TOKEN = "36A9F18467C3EFD17E223FA46A3E4"  
 
 SECRET_KEY = "super-secret-key"
-curr_date_time_find = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+curr_date_time_find = datetime.datetime.now(india_tz).strftime("%Y-%m-%d %H:%M:%S")
 curr_date_time=curr_date_time_find.replace(" ","_").replace(":","-")
 
 def login(request):  
@@ -84,9 +87,6 @@ def Employee_stock_detail(req, emp_id):
         )
     )
     
-
-    a={'product_item_id': '1', 'product_item__product': 'GOPON -1000R -ONU (NORMAL ONU)', 'qty': '1', 'unit': 'PCS', 'sr_no': '1234567890', 'reading_from': '', 'reading_to': '', 'date': datetime.datetime(2025, 9, 26, 15, 1, 24, tzinfo=datetime.timezone.utc), 'doc__type': 'return', 'doc__user_id': 18, 'user__user_name': 'UMESH SONWANE', 'user__employee_id': 'ECS10002'}
-
     return render(req, "stocks_employee.html", {"stocks": stockdata, "employee": employee,'quotes':quotes})
 
 
@@ -119,9 +119,6 @@ def find_employee(emp_id=None):
         return None if emp_id else []
 
 
-import pytz
-
-india_tz = pytz.timezone("Asia/Kolkata")
 
 
 def Issue(request, emp_id):
@@ -533,7 +530,7 @@ def update_items(request):
     return render(request, 'update_items.html')
 
 def sample(req):
-    return render(req, 'rough.html')
+    return render(req, 'sample.html')
 
 
 
@@ -574,8 +571,8 @@ def file_validity_checker():
     pattern = r"(\d{4}-\d{2}-\d{2})_(\d{2}-\d{2}-\d{2})"
 
     # Current datetime
-    curr_datetime = datetime.datetime.now().replace(microsecond=0)
-    print("Current time:", curr_datetime)
+    curr_datetime = datetime.datetime.now(india_tz).replace(microsecond=0)
+    print("Current time in ims:", curr_datetime)
 
     # ---------------------------
     # 6. Loop through files in media folder
@@ -590,16 +587,17 @@ def file_validity_checker():
                 basetime_colon = basetime.replace("-", ":")
                 datetime_str = f"{basedate} {basetime_colon}"
                 try:
-                    dt_object = datetime.datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
+                    dt_object1 = datetime.datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
+                    dt_object = india_tz.localize(dt_object1)
                     difftime = curr_datetime - dt_object
+
                     
-                    # Check if older than or equal to 1 hour
                     if difftime >= timedelta(hours=1):
                         print(f"Deleting file: {filename} | Time difference: {difftime}")
                         os.remove(file_path)
                     else:
                         print(f"File is recent: {filename} | Time difference: {difftime}")
-                        
+
                 except ValueError:
                     print("Error: Could not parse datetime from filename")
             else:

@@ -65,7 +65,7 @@
                 </select>
               </td>
               <td data-label="Quantity" class="px-2 py-1">
-                <input type="number" name="quantity[]" class="border border-gray-300 rounded-md px-2 py-2 w-full" min="1" value="1" required>
+                <input type="number" name="quantity[]" class="border border-gray-300 rounded-md px-3 py-2 w-full" min="1" value="1" required>
               </td>
               <td data-label="Unit" class="px-2 py-1">
                 <input type="text" name="unit[]" class="border border-gray-300 rounded-md px-2 py-2 w-full unit-field" readonly required>
@@ -77,14 +77,14 @@
                 </div>
               </td>
               <td data-label="Action" class="px-2 py-1 text-center">
-                <button type="button" class="bg-red-600 text-white px-2 py-1 rounded btn-sm w-full sm:w-auto" onclick="removeRow(this)"><i class="ri-delete-bin-line"></i></button>
+                <button type="button" class="bg-red-600 text-white px-3 py-1 rounded btn-sm w-full sm:w-auto" onclick="removeRow(this)"><i class="ri-delete-bin-line"></i></button>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- Scanner Area -->
+      <!-- Scanner -->
       <div id="scannerWrapper" class="mt-3 text-center hidden">
         <div id="scanner" class="border rounded p-2 mx-auto w-full max-w-md"></div>
         <div class="mt-2 flex justify-center flex-wrap gap-2">
@@ -112,35 +112,35 @@
 
     <!-- Back Button -->
     {% if messages %}
-    <div class="mt-3 text-center">
-      <form method="get" action="{% url 'stocks' %}">
-        <input type="hidden" name="emp_id" value="{{ employee.Emp_id }}">
-        <!-- From Uiverse.io by AKAspidey01 --> 
-<button
-  class="bg-white text-center w-36 rounded-2xl h-12 relative text-black text-xl font-semibold group"
-  type="submit"
->
-  <div
-    class="bg-orange-400 rounded-xl h-10 w-1/4 flex items-center justify-center absolute left-1 top-[4px] group-hover:w-[130px] z-10 duration-500"
-  >
- 
-    <i class="ri-arrow-left-double-line text-white"></i>
-  </div>
-  <p class="translate-x-2 text-md">Go Back</p>
-</button>
+      <div class="mt-3 text-center">
+        <form method="get" action="{% url 'stocks' %}">
+          <input type="hidden" name="emp_id" value="{{ employee.Emp_id }}">
+          <!-- From Uiverse.io by AKAspidey01 --> 
+          <button
+            class="bg-white text-center w-36 rounded-2xl h-12 relative text-black text-xl font-semibold group"
+            type="submit"
+            >
+            <div
+              class="bg-orange-400 rounded-xl h-10 w-1/4 flex items-center justify-center absolute left-1 top-[4px] group-hover:w-[130px] z-10 duration-500"
+            >
+          
+              <i class="ri-arrow-left-double-line text-white"></i>
+            </div>
+            <p class="translate-x-2 text-md">Go Back</p>
+          </button>
 
-      </form>
-    </div>
+        </form>
+      </div>
     {% endif %}
 
     <!-- Rescan Confirmation Modal -->
-    <div id="rescanModal" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center hidden">
+    <div id="rescanModal" class="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center hidden">
       <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-md p-4">
         <div class="flex justify-between items-center mb-4">
           <h3 class="font-semibold text-lg">Rescan Confirmation</h3>
           <button class="text-gray-500 text-xl" onclick="document.getElementById('rescanModal').classList.add('hidden')">&times;</button>
         </div>
-        <p class="mb-4">This field already has a value. Do you want to rescan and overwrite it?</p>
+        <p class="mb-4" >This field already has a value. Do you want to rescan and overwrite it?</p>
         <div class="flex justify-end gap-2">
           <button id="noRescanBtn" class="bg-gray-300 px-3 py-1 rounded" onclick="document.getElementById('rescanModal').classList.add('hidden')">No</button>
           <button id="yesRescanBtn" class="bg-blue-600 text-white px-3 py-1 rounded">Yes</button>
@@ -150,17 +150,28 @@
 
   </div>
 </div>
-
 <!-- Mobile Submit -->
 <div class="text-center mt-4 md:hidden">
   <button type="submit" form="issueForm" class="bg-blue-600 text-white px-6 py-2 rounded w-3/4">Submit</button>
 </div>
 
-<!-- QR Scanner Library -->
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 
-<!-- Mobile-friendly stacked table CSS -->
+<!-- Select2 Styling Fix and Mobile Table -->
 <style>
+.select2-container .select2-selection--single {
+  height: 38px !important;
+  align-items: center !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 0.375rem !important;
+  padding-left: 0.5rem !important;
+  display: flex !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: 37px !important;
+  right: 8px !important;
+}
 @media (max-width: 640px) {
   table.table-responsive thead { display: none; }
   table.table-responsive, table.table-responsive tbody, table.table-responsive tr, table.table-responsive td {
@@ -178,16 +189,45 @@
     font-weight: 600; text-align: left;
   }
   .btn-sm, .scan-btn { width: 100% !important; }
-  .flex-col.sm\:flex-row { flex-direction: column !important; }
 }
 </style>
 
-<!-- JS Logic -->
 <script>
 let html5QrCode;
-let currentCamera = "user"; 
+let currentCamera = "user";
 let currentZoom = null;
 let pendingInputField = null;
+
+
+$(document).ready(function() { 
+  initSelect2(); 
+  setupUnitChangeEvent(); 
+});
+
+function initSelect2() {
+  $('.product-select').select2({
+    placeholder: "- Search Product -",
+    allowClear: true,
+    width: "100%"
+  });
+  $('.product-select').on('select2:open', function () {
+  const searchField = $('.select2-container .select2-search__field');
+  searchField.attr('placeholder', 'Search');
+  });
+  $('.product-select').on("select2:select", function () {
+    let selectedText = $(this).find("option:selected").text();
+    let container = $(this).next('.select2-container');
+    container.find('.select2-selection__rendered').text(selectedText);
+  });
+
+  $('.product-select').on("change", function () {
+    let selectedText = $(this).find("option:selected").text();
+    let container = $(this).next('.select2-container');
+    container.find('.select2-selection__rendered').text(selectedText);
+  });
+
+  setupUnitChangeEvent();
+}
 
 function addRow() {
   let table = document.getElementById("issueTable");
@@ -219,53 +259,73 @@ function addRow() {
       <button type="button" class="bg-red-600 text-white px-2 py-1 rounded btn-sm w-full sm:w-auto" onclick="removeRow(this)"><i class="ri-delete-bin-line"></i></button>
     </td>
   `;
+
   table.appendChild(row);
+  initSelect2(); // important
 }
 
-function removeRow(btn) { btn.closest("tr").remove(); }
+function removeRow(btn) {
+  btn.closest("tr").remove();
+}
 
-// Product selection
-document.addEventListener("change", function(e) {
-  if (e.target.classList.contains("product-select")) {
-    const selected = e.target.options[e.target.selectedIndex];
-    const unit = selected.getAttribute("data-unit");
-    const row = e.target.closest("tr");
-    row.querySelector(".unit-field").value = unit || "";
-    const container = row.querySelector(".dynamic-fields");
-    if (unit && unit.toLowerCase() === "mtr") {
-      container.innerHTML = `
-        <div class="flex flex-col sm:flex-row justify-between gap-2">
-          <input type="number" name="meter_from[]" class="border border-gray-300 rounded-md px-3 py-2 w-full sm:w-[48%]" placeholder="Meter From" required>
-          <input type="number" name="meter_to[]" class="border border-gray-300 rounded-md px-3 py-2 w-full sm:w-[48%]" placeholder="Meter To" required>
-        </div>
-      `;
-    } else {
-      container.innerHTML = `
-        <div class="flex flex-col sm:flex-row gap-2 border border-gray-300 rounded-md px-2 py-1">
-          <input type="text" name="serial_no[]" class="flex-1 px-2 py-1 serial-input" placeholder="Serial No." required>
-          <button type="button" class="bg-yellow-500 text-black px-2 py-1 rounded scan-btn sm:w-auto w-full"><i class="ri-camera-line"></i></button>
-        </div>
-      `;
-    }
-  }
+$(document).on('select2:select', '.product-select', function () {
+  updateDynamicFields(this);
 });
 
-// Scan button logic
+
+// Update unit and dynamic fields
+function updateDynamicFields(selectElement) {
+  const selected = selectElement.options[selectElement.selectedIndex];
+  const unit = selected.getAttribute("data-unit");
+  const row = selectElement.closest("tr");
+  const container = row.querySelector(".dynamic-fields");
+
+  row.querySelector(".unit-field").value = unit || "";
+
+  if (unit && unit.toLowerCase() === "mtr") {
+    container.innerHTML = `
+      <div class="flex flex-col sm:flex-row justify-between gap-2">
+        <input type="number" name="meter_from[]" class="border border-gray-300 rounded-md px-3 py-2 w-full sm:w-[48%]" placeholder="Meter From" required>
+        <input type="number" name="meter_to[]" class="border border-gray-300 rounded-md px-3 py-2 w-full sm:w-[48%]" placeholder="Meter To" required>
+      </div>
+    `;
+  } else {
+    container.innerHTML = `
+      <div class="flex flex-col sm:flex-row gap-2 border border-gray-300 rounded-md px-2 py-1">
+        <input type="text" name="serial_no[]" class="flex-1 px-2 py-1 serial-input" placeholder="Serial No." required>
+        <button type="button" class="bg-yellow-500 text-black px-2 py-1 rounded scan-btn sm:w-auto w-full"><i class="ri-camera-line"></i></button>
+      </div>
+    `;
+  }
+}
+
+// Scan button handler
 document.addEventListener("click", function(e) {
   if (e.target.classList.contains("scan-btn")) {
     let inputField = e.target.closest("td").querySelector(".serial-input");
     if (inputField.value.trim() !== "") {
       pendingInputField = inputField;
-      new bootstrap.Modal(document.getElementById("rescanModal")).show();
-    } else { openScanner(inputField); }
+      document.getElementById("rescanModal").classList.remove("hidden");
+    } else {
+      openScanner(inputField);
+    }
   }
 });
+
+// Rescan modal Yes
 document.getElementById("yesRescanBtn").addEventListener("click", function() {
+  document.getElementById("rescanModal").classList.add("hidden");
   if (pendingInputField) {
-    bootstrap.Modal.getInstance(document.getElementById("rescanModal")).hide();
+    pendingInputField.value = "";
     openScanner(pendingInputField);
     pendingInputField = null;
   }
+});
+
+// Rescan modal No
+document.getElementById("noRescanBtn").addEventListener("click", function() {
+  document.getElementById("rescanModal").classList.add("hidden");
+  pendingInputField = null;
 });
 
 function openScanner(inputField) {
@@ -278,6 +338,7 @@ function openScanner(inputField) {
 function startScanner(inputField) {
   let constraints = { facingMode: currentCamera };
   if (currentZoom) constraints.advanced = [{ zoom: currentZoom }];
+
   html5QrCode.start(
     { facingMode: currentCamera },
     { fps: 10, qrbox: { width: 250, height: 150 }, videoConstraints: constraints },
@@ -285,21 +346,33 @@ function startScanner(inputField) {
       html5QrCode.stop().then(() => {
         document.getElementById("scannerWrapper").style.display = "none";
         inputField.value = decodedText;
+
         let preview = document.getElementById("preview");
         preview.innerHTML = `<p class="fade-text">Serial scanned: ${decodedText}</p>`;
         setTimeout(() => {
           let textEl = preview.querySelector(".fade-text");
-          if (textEl) { textEl.style.opacity = "0"; setTimeout(() => { preview.innerHTML = ""; }, 500); }
+          if (textEl) {
+            textEl.style.opacity = "0";
+            setTimeout(() => { preview.innerHTML = ""; }, 500);
+          }
         }, 3000);
       });
     }
   ).catch(err => alert("Camera error: " + err));
 }
 
-// Zoom & Camera toggle
-document.getElementById("zoomNormal").addEventListener("click", () => { currentZoom = null; restartScanner(); });
-document.getElementById("zoom2x").addEventListener("click", () => { currentZoom = 2; restartScanner(); });
-document.getElementById("zoom3x").addEventListener("click", () => { currentZoom = 3; restartScanner(); });
+document.getElementById("zoomNormal").addEventListener("click", () => {
+  currentZoom = null;
+  restartScanner();
+});
+document.getElementById("zoom2x").addEventListener("click", () => {
+  currentZoom = 2;
+  restartScanner();
+});
+document.getElementById("zoom3x").addEventListener("click", () => {
+  currentZoom = 3;
+  restartScanner();
+});
 
 function restartScanner() {
   if (html5QrCode) {
@@ -309,15 +382,17 @@ function restartScanner() {
     });
   }
 }
+
 document.getElementById("toggleCamera").addEventListener("click", () => {
-  currentCamera = (currentCamera === "user") ? "environment" : "user";
+  currentCamera = currentCamera === "user" ? "environment" : "user";
   if (html5QrCode) html5QrCode.stop().then(() => {
     let inputField = document.querySelector(".serial-input");
     if (inputField) startScanner(inputField);
   });
 });
+
 document.getElementById("closeScanner").addEventListener("click", () => {
-  if (html5QrCode) html5QrCode.stop().catch(()=>{});
+  if (html5QrCode) html5QrCode.stop().catch(() => {});
   document.getElementById("scannerWrapper").style.display = "none";
 });
 </script>

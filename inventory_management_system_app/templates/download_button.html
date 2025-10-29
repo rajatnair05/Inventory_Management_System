@@ -310,7 +310,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (hiddenInput.value === "download") {
             // Set form action and submit normally
-            form.action = "{% url 'download_report' %}";
+            form.action = "/ims{% url 'download_report' %}";
             form.submit(); 
             setTimeout(() => {
                 close_loader(actionBtn); // re-enable button after a delay
@@ -318,7 +318,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Loader will remain active until browser handles download
         } 
         else if (hiddenInput.value === "share") {
-            fetch("{% url 'download_report' %}", {
+            fetch("/ims{% url 'download_report' %}", {
                 method: "POST",
                 body: new FormData(form),
                 headers: {
