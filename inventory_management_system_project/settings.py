@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 import django
+from django.contrib import messages
 # settings.py
 USE_TZ = True
 TIME_ZONE = "Asia/Kolkata"
@@ -62,7 +63,13 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+MESSAGE_TAGS = {
+    messages.DEBUG: 'bg-gray-200 text-gray-800',
+    messages.INFO: 'bg-blue-100 text-blue-800',
+    messages.SUCCESS: 'bg-green-100 text-green-800',
+    messages.WARNING: 'bg-yellow-100 text-yellow-800',
+    messages.ERROR: 'bg-red-100 text-red-800',
+}
 ROOT_URLCONF = 'inventory_management_system_project.urls'
 
 TEMPLATES = [
@@ -168,3 +175,12 @@ django.setup()
 #media 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = "/media/"
+
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'emailwashere'
+EMAIL_HOST_PASSWORD = 'mypasswordwashere'  # use app password, not actual password

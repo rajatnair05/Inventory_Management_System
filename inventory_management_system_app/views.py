@@ -1,8 +1,12 @@
+from email import message
 from django.shortcuts import render, redirect, get_object_or_404
 import json
 from django.http import HttpResponse, JsonResponse, FileResponse, Http404
 from django.contrib import messages
 import datetime
+
+from django.http import JsonResponse
+from h11 import Request
 import mysql.connector
 from zoneinfo import ZoneInfo
 import requests
@@ -33,6 +37,7 @@ from django.urls import reverse
 
 india_tz = pytz.timezone("Asia/Kolkata")
 
+from django.contrib import messages
 
 API_BASE_URL = "http://api.elxer.com/v2/elxerone/agent-list"  
 API_TOKEN = "36A9F18467C3EFD17E223FA46A3E4"  
@@ -346,7 +351,7 @@ def download_report(request):
         file_type = request.POST.get("tabs2")
         emp_id = request.POST.get("emp_id")
         action = request.POST.get("action")  # "download" or "share"
-
+        user_email = request.POST.get("emp_email")
         # Debug print
         print(f"Action: {action}")
         print(f"Received Data => From: {from_date}, To: {to_date}, {report_type}")
@@ -401,6 +406,21 @@ def download_report(request):
             "share_url": shareablelink,
             "message_text": message_text
         })
+            elif action =="email":
+                filename = f"Stocks_{report_type}_{from_date}_to_{to_date}_{(curr_date_time)}.xlsx"
+                filepath = os.path.join(settings.MEDIA_ROOT, filename)
+                with open(os.path.join(settings.MEDIA_ROOT, filename), "wb") as f:  
+                    f.write(output.getvalue())
+                recipient_email = request.POST.get("recipient_email")
+                print(recipient_email)
+                if recipient_email:
+                    try:
+                        send_email(filepath, recipient_email)
+                        return JsonResponse({"success": True, "message": "Email sent successfully!"})
+                    except Exception as e:
+                        return JsonResponse({"success": False, "message": str(e)})
+                else:
+                    return JsonResponse({"success": False, "message": "No email provided."})
             else:
                 return FileResponse(
                     output,
@@ -422,8 +442,24 @@ def download_report(request):
                 
                 return JsonResponse({
             "share_url": shareablelink,
-            "message_text": message_text
-        })
+            "message_text": message_text})
+                
+                
+            elif action =="email":
+                filename = f"Stocks_{report_type}_{from_date}_to_{to_date}_{(curr_date_time)}.csv"
+                filepath = os.path.join(settings.MEDIA_ROOT, filename)
+                with open(os.path.join(settings.MEDIA_ROOT, filename), "wb") as f:  
+                    f.write(output.getvalue())
+                recipient_email = request.POST.get("recipient_email")
+                print(recipient_email)
+                if recipient_email:
+                    try:
+                        send_email(filepath, recipient_email)
+                        return JsonResponse({"success": True, "message": "Email sent successfully!"})
+                    except Exception as e:
+                        return JsonResponse({"success": False, "message": str(e)})
+                else:
+                    return JsonResponse({"success": False, "message": "No email provided."})
             else:    
                 return FileResponse(output, as_attachment=True, filename=filename, content_type='text/csv')
         elif file_type.lower() == "pdf":
@@ -481,6 +517,22 @@ def generate_pdf_report(request, df, from_date, to_date, report_type, action="do
             "share_url": shareablelink,
             "message_text": message_text
         })
+    elif action == "email":
+        with open(output_filepath, "wb") as f:
+            f.write(buffer.getvalue())
+            print(f"Report saved to {output_filepath}")
+
+        recipient_email = request.POST.get("recipient_email")
+        print(recipient_email)
+        if recipient_email:
+            try:
+                send_email(output_filepath, recipient_email)
+                return JsonResponse({"success": True, "message": "Email sent successfully!"})
+            except Exception as e:
+                return JsonResponse({"success": False, "message": str(e)})
+        else:
+            return JsonResponse({"success": False, "message": "No email provided."})
+
     else:
         return FileResponse(
             buffer,
@@ -602,3 +654,21 @@ def file_validity_checker():
                     print("Error: Could not parse datetime from filename")
             else:
                 print("No datetime found in filename")
+                
+                
+from django.core.mail import EmailMessage
+import os
+
+def send_email(filepath, to_email):
+    if not os.path.exists(filepath):
+        return False  # file doesn't exist
+
+    email = EmailMessage(
+        subject="Your Report",
+        body="Please find the attached report.",
+        from_email="your_email@example.com",  # replace with your email
+        to=[to_email]
+    )
+    email.attach_file(filepath)
+    email.send()
+    return True
